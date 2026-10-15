@@ -1,0 +1,12 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
