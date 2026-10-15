@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: ./apps/clai-backend
+    container_name: clai-backend-dev
+    env_file: .env.dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
