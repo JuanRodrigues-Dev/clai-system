@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-//import LoginPage from './features/auth/LoginPage'
-//import EstudantesListPage from './features/estudantes/EstudantesListPage'
-//import EstudanteFormPage from './features/estudantes/EstudanteFormPage'
+import LoginPage from './features/auth/LoginPage'
+import EstudantesListPage from './features/estudantes/EstudantesListPage'
+import EstudanteFormPage from './features/estudantes/EstudanteFormPage'
 
 export default function App() {
   return (
