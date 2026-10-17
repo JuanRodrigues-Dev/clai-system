@@ -35,7 +35,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { isAuthenticated, signIn } = useAuth()
   const location = useLocation()
-  const destino = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/estudantes'
+  const destino =(location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/inicio'
+
  
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -62,7 +63,7 @@ export default function LoginPage() {
     }
   }
   if (isAuthenticated) {
-    return <Navigate to="/estudantes" replace />
+    return <Navigate to="/inicio" replace />
   }
  
   return (
