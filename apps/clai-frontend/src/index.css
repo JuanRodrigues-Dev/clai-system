@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-clai-950: #04285a;
+  --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --color-clai-950: #052a58;
   --color-clai-900: #053a7c;
+  --color-clai-800: #0b4a96;
   --color-clai-700: #0558d1;
   --color-clai-600: #0a63e0;
   --color-clai-300: #8cc4ff;
@@ -10,5 +12,5 @@
 }
 
 body {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
