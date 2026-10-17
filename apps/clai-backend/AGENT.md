@@ -32,6 +32,13 @@ br.edu.ifpb.clai
 - Não adicione dependências sem justificativa. Se adicionar, explique no PR.
 - Não altere nem desative testes para fazer o build passar.
 - Se houver dúvida sobre regra de negócio ou arquitetura, pergunte antes de implementar.
+- Ao concluir uma task, acrescente uma entrada em `docs/agentes/AAAA-MM.md` (crie o arquivo se não existir) com:
+    - data e id da task;
+    - arquivos alterados;
+    - decisões tomadas por conta própria;
+    - pontos pendentes de revisão.
+- Se a mudança alterar a arquitetura ou uma decisão técnica, crie um novo ADR em `docs/decisoes/` com o próximo número. Nunca edite ou apague um ADR existente.
+- Não registre dados pessoais de estudantes nem laudos em `docs/`.
 
 ## Segurança
 
