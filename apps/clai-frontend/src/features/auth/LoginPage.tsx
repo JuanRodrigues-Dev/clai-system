@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import {
   Accessibility,
@@ -17,6 +16,8 @@ import {
 import { login } from './authService'
 import claiLogo from '../../assets/clai-logo.svg'
 import ilustracao from '../../assets/ilustracao.png'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from './useAuth'
  
 const destaques = [
   { icon: Accessibility, label: 'Acessibilidade' },
@@ -32,6 +33,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { isAuthenticated, signIn } = useAuth()
+  const location = useLocation()
+  const destino = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/estudantes'
  
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -45,8 +49,8 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const token = await login({ username: username.trim(), password })
-      localStorage.setItem('token', token)
-      navigate('/estudantes', { replace: true })
+      signIn(token)
+      navigate(destino, { replace: true })
     } catch (err) {
       if (axios.isAxiosError(err) && !err.response) {
         setError('Não foi possível conectar ao servidor.')
@@ -56,6 +60,9 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+  if (isAuthenticated) {
+    return <Navigate to="/estudantes" replace />
   }
  
   return (
