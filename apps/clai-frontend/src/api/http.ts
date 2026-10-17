@@ -12,3 +12,15 @@ http.interceptors.request.use((config) => {
   }
   return config
 })
+
+http.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    const loginFalhou = axios.isAxiosError(error) && error.config?.url?.includes('/auth/login')
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !loginFalhou) {
+      localStorage.removeItem('token')
+      window.location.assign('/login')
+    }
+    return Promise.reject(error)
+  },
+)
