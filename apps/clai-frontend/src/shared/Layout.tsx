@@ -1,5 +1,21 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Home, LogOut, User, Users } from 'lucide-react'
 import { useAuth } from '../features/auth/useAuth'
+import claiLogo from '../assets/clai-logo.svg'
+
+const links = [
+  { to: '/inicio', label: 'Início', icon: Home },
+  { to: '/estudantes', label: 'Estudantes', icon: Users },
+]
+
+// fixo na Sprint 1 (único usuário: administrador global)
+const NOME_USUARIO = 'Administrador'
+
+function linkClass({ isActive }: { isActive: boolean }) {
+  return `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+    isActive ? 'bg-blue-600 text-white' : 'text-blue-100 hover:bg-white/10'
+  }`
+}
 
 export default function Layout() {
   const { signOut } = useAuth()
@@ -11,33 +27,67 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <div className="flex items-center gap-8">
-            <span className="text-lg font-extrabold text-clai-700">CLAI</span>
-            <NavLink
-              to="/estudantes"
-              className={({ isActive }) =>
-                isActive ? 'font-semibold text-clai-700' : 'text-slate-600 hover:text-clai-700'
-              }
-            >
-              Estudantes
+    <div className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[16rem_1fr]">
+      {/* Sidebar (telas grandes) */}
+      <aside className="sticky top-0 hidden h-screen flex-col bg-clai-950 px-4 py-6 text-white lg:flex">
+        <img
+          src={claiLogo}
+          alt="CLAI"
+          className="mb-8 h-10 w-auto self-start brightness-0 invert"
+        />
+
+        <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
+          {links.map(({ to, label, icon: Icon }) => (
+            <NavLink key={to} to={to} className={linkClass}>
+              <Icon className="size-5" aria-hidden="true" />
+              {label}
             </NavLink>
-          </div>
+          ))}
+        </nav>
+
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-blue-100 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <LogOut className="size-5" aria-hidden="true" />
+          Sair
+        </button>
+      </aside>
+
+      <div className="flex min-w-0 flex-col">
+        {/* Cabeçalho (telas grandes): usuário */}
+        <header className="hidden h-16 items-center justify-end gap-3 border-b border-slate-200 bg-white px-8 lg:flex">
+          <span className="flex size-9 items-center justify-center rounded-full bg-blue-600 text-white">
+            <User className="size-5" aria-hidden="true" />
+          </span>
+          <span className="text-sm font-semibold text-slate-800">{NOME_USUARIO}</span>
+        </header>
+
+        {/* Barra superior (telas pequenas): navegação + sair */}
+        <header className="flex items-center justify-between bg-clai-950 px-4 py-3 text-white lg:hidden">
+          <nav aria-label="Principal" className="flex gap-1">
+            {links.map(({ to, label, icon: Icon }) => (
+              <NavLink key={to} to={to} className={linkClass}>
+                <Icon className="size-5" aria-hidden="true" />
+                {label}
+              </NavLink>
+            ))}
+          </nav>
           <button
             type="button"
             onClick={handleSignOut}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-clai-700"
+            aria-label="Sair"
+            className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
-            Sair
+            <LogOut className="size-5" aria-hidden="true" />
           </button>
-        </nav>
-      </header>
+        </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-8">
-        <Outlet />
-      </main>
+        <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }
