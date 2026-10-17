@@ -1,0 +1,1 @@
+liste os requisitos funcionais RF01 a RF06 (login, cadastro, listagem, busca, alteração, exclusão lógica) e os não funcionais RNF01 a RNF06 (JWT, BCrypt, Supabase, Docker Compose e gateway, sem dados pessoais em log, acessibilidade).
