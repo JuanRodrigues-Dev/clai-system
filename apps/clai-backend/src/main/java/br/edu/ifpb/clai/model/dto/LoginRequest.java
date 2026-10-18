@@ -1,4 +1,4 @@
-package br.edu.ifpb.clai_backend.model.dto;
+package br.edu.ifpb.clai.model.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

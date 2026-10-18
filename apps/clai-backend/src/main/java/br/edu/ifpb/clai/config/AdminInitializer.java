@@ -1,7 +1,7 @@
-package br.edu.ifpb.clai_backend.config;
+package br.edu.ifpb.clai.config;
 
-import br.edu.ifpb.clai_backend.model.Usuario;
-import br.edu.ifpb.clai_backend.repository.UsuarioRepository;
+import br.edu.ifpb.clai.model.Usuario;
+import br.edu.ifpb.clai.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

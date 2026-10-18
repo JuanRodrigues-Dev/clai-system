@@ -1,4 +1,4 @@
-package br.edu.ifpb.clai_backend.config;
+package br.edu.ifpb.clai.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package br.edu.ifpb.clai_backend;
+package br.edu.ifpb.clai;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
