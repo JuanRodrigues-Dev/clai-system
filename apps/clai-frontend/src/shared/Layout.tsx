@@ -80,17 +80,9 @@ export default function Layout() {
        </div>
       </aside>
 
-      <div className="flex min-w-0 flex-col">
-        {/* Cabeçalho (telas grandes): usuário */}
-        <header className="hidden h-16 items-center justify-end gap-3 border-b border-slate-200 bg-white px-8 lg:flex">
-          <span className="flex size-9 items-center justify-center rounded-full bg-blue-600 text-white">
-            <User className="size-5" aria-hidden="true" />
-          </span>
-          <span className="text-sm font-semibold text-slate-800">{NOME_USUARIO}</span>
-        </header>
-
+            <div className="flex min-w-0 flex-col">
         {/* Barra superior (telas pequenas): navegação + sair */}
-        <header className="flex items-center justify-between bg-clai-950 px-4 py-3 text-white lg:hidden">
+        <div className="flex items-center justify-between bg-clai-950 px-4 py-3 text-white lg:hidden">
           <nav aria-label="Principal" className="flex gap-1">
             {links.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} className={linkClass}>
@@ -107,9 +99,18 @@ export default function Layout() {
           >
             <LogOut className="size-5" aria-hidden="true" />
           </button>
+        </div>
+
+        {/* Cabeçalho: título da página + usuário */}
+        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8">
+          <h1 className="text-xl font-bold text-clai-950 lg:text-2xl">{titulo}</h1>
+          <div className="hidden items-center gap-3 lg:flex">
+            <Avatar />
+            <span className="text-sm font-semibold text-slate-800">{NOME_USUARIO}</span>
+          </div>
         </header>
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 lg:px-8 lg:py-8">
           <Outlet />
         </main>
       </div>
