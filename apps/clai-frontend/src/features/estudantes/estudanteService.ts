@@ -1,5 +1,6 @@
+import axios from 'axios'
 import { http } from '../../api/http'
-import type { Estudante } from '../../types/estudante'
+import type { Estudante, NovoEstudante } from '../../types/estudante'
 
 // DADOS FICTÍCIOS, usados só com VITE_USE_MOCK=true enquanto o backend não existe.
 const NOMES = ['Ana', 'Carlos', 'Juliana', 'Lucas', 'Mariana', 'Pedro', 'Beatriz', 'Rafael']
@@ -29,9 +30,38 @@ const ESTUDANTES_FICTICIOS: Estudante[] = Array.from({ length: 24 }, (_, i) => {
 export async function listarEstudantes(): Promise<Estudante[]> {
   if (import.meta.env.VITE_USE_MOCK === 'true') {
     await new Promise((resolve) => setTimeout(resolve, 400))
-    return ESTUDANTES_FICTICIOS
+    return [...ESTUDANTES_FICTICIOS]
   }
 
   const response = await http.get<Estudante[]>('/estudantes')
   return response.data
+}
+
+// Erro de negócio: já existe estudante com o mesmo CPF (o backend responde 409)
+export class EstudanteDuplicadoError extends Error {}
+
+export async function cadastrarEstudante(dados: NovoEstudante): Promise<Estudante> {
+  if (import.meta.env.VITE_USE_MOCK === 'true') {
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    const cpfNovo = dados.cpf.replace(/\D/g, '')
+    if (ESTUDANTES_FICTICIOS.some((e) => e.cpf.replace(/\D/g, '') === cpfNovo)) {
+      throw new EstudanteDuplicadoError()
+    }
+    const criado: Estudante = {
+      ...dados,
+      id: Math.max(0, ...ESTUDANTES_FICTICIOS.map((e) => e.id)) + 1,
+    }
+    ESTUDANTES_FICTICIOS.push(criado)
+    return criado
+  }
+
+  try {
+    const response = await http.post<Estudante>('/estudantes', dados)
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 409) {
+      throw new EstudanteDuplicadoError()
+    }
+    throw error
+  }
 }
