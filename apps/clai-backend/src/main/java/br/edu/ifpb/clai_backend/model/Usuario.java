@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    @JsonIgnore
     @Column(name = "senha_hash", nullable = false, length = 255)
     private String senhaHash;
 
@@ -53,6 +55,7 @@ public class Usuario {
         return email;
     }
 
+    @JsonIgnore
     public String getSenhaHash() {
         return senhaHash;
     }
