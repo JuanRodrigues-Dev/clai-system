@@ -35,8 +35,25 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-claidb}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-claiapp}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-    # Em produção, as portas internas não são expostas diretamente ao host,
-    # sendo acessadas pelo Gateway Nginx (porta 80/443).
+
+  frontend:
+    build:
+      context: ./apps/clai-frontend
+      dockerfile: Dockerfile
+    container_name: clai-frontend-prod
+    restart: always
+
+  gateway:
+    image: nginx:1.27-alpine
+    container_name: clai-gateway-prod
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data_prod:
