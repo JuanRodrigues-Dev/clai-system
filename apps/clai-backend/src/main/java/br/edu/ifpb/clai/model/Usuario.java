@@ -1,6 +1,5 @@
 package br.edu.ifpb.clai.model;
 
-import br.edu.ifpb.clai.model.Column;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

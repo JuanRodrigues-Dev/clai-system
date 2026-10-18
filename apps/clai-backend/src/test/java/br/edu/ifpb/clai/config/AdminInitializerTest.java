@@ -1,4 +1,4 @@
-package br.edu.ifpb.clai_backend.config;
+package br.edu.ifpb.clai.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import br.edu.ifpb.clai_backend.model.Usuario;
-import br.edu.ifpb.clai_backend.repository.UsuarioRepository;
+import br.edu.ifpb.clai.model.Usuario;
+import br.edu.ifpb.clai.repository.UsuarioRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

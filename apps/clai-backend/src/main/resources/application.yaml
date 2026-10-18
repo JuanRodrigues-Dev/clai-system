@@ -11,3 +11,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: none
+
+clai:
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+  jwt:
+    secret: ${JWT_SECRET:default_dev_jwt_secret_key_minimum_256_bits_length_clai}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}

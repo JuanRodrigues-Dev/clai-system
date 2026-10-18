@@ -1,12 +1,12 @@
-package br.edu.ifpb.clai_backend.config;
+package br.edu.ifpb.clai.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import br.edu.ifpb.clai_backend.model.Usuario;
-import br.edu.ifpb.clai_backend.model.dto.UsuarioResponse;
+import br.edu.ifpb.clai.model.Usuario;
+import br.edu.ifpb.clai.model.dto.UsuarioResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

@@ -1,4 +1,4 @@
-package br.edu.ifpb.clai_backend;
+package br.edu.ifpb.clai;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
