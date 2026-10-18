@@ -1,5 +1,6 @@
 //Mudar Quando decidir o que estudante 
 export interface Estudante {
+  nome: string
   matricula: string
   cpf: string
   dataNascimento: string
