@@ -121,4 +121,42 @@ class AuthControllerTest {
 
         assertThat(jwtService.validarEExtrairSubject(tokenAdulterado)).isEmpty();
     }
+
+    @Test
+    void deveRetornarCorpo401IdenticoSemRevelarSeUsuarioExiste() throws Exception {
+        Usuario usuario = new Usuario("admin@ifpb.edu.br", passwordEncoder.encode("SenhaCorreta!"));
+        when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail("inexistente@ifpb.edu.br")).thenReturn(Optional.empty());
+
+        String respostaInexistente = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inexistente@ifpb.edu.br\",\"senha\":\"SenhaQualquer\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String respostaSenhaErrada = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin@ifpb.edu.br\",\"senha\":\"SenhaErrada\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String respostaCamposVazios = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"\",\"senha\":\"\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(respostaInexistente)
+                .isEqualTo(respostaSenhaErrada)
+                .isEqualTo(respostaCamposVazios)
+                .doesNotContain("inexistente@ifpb.edu.br")
+                .doesNotContain("admin@ifpb.edu.br");
+    }
 }
+
