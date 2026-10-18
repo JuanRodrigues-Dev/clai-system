@@ -11,3 +11,8 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: none
+
+clai:
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
