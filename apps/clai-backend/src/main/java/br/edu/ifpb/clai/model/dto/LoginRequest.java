@@ -1,10 +1,9 @@
 package br.edu.ifpb.clai.model.dto;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
-        @NotBlank @Email String email,
-        @NotBlank String senha) {
+        @NotBlank @JsonAlias("username") String email,
+        @NotBlank @JsonAlias("password") String senha) {
 }
-

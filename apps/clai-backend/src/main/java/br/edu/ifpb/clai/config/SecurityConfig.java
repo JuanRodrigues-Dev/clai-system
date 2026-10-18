@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/**", "/actuator/health").permitAll()
+                        .requestMatchers("/auth/login", "/auth/**", "/v1/auth/**", "/actuator/health").permitAll()
                         .anyRequest().authenticated());
 
         return http.build();
