@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai_backend.model.dto;
 
+import br.edu.ifpb.clai_backend.model.Usuario;
 import java.time.Instant;
 
 public record UsuarioResponse(

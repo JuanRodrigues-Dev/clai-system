@@ -1,10 +1,10 @@
-package br.edu.ifpb.clai_backend.repository;
+package br.edu.ifpb.clai_backend.model.dto;
 
-import br.edu.ifpb.clai_backend.model.Usuario;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-
-    Optional<Usuario> findByEmail(String email);
+public record LoginRequest(
+        @NotBlank @Email String email,
+        @NotBlank String senha) {
 }
+
