@@ -2,11 +2,11 @@ spring:
   application:
     name: clai-api
   config:
-    import: "optional:file:.env[.properties],optional:file:../../.env[.properties]"
+    import: "optional:file:.env[.properties],optional:file:../../.env[.properties],optional:file:.env.dev[.properties],optional:file:../../.env.dev[.properties],optional:file:.env.prod[.properties],optional:file:../../.env.prod[.properties]"
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/claidb}
+    username: ${SPRING_DATASOURCE_USERNAME:claiapp}
+    password: ${SPRING_DATASOURCE_PASSWORD:clai123}
   jpa:
     open-in-view: false
     hibernate:

@@ -3,6 +3,11 @@ services:
     image: postgres:17-alpine
     container_name: clai-postgres-dev
     restart: unless-stopped
+    env_file:
+      - path: .env.dev
+        required: false
+      - path: .env
+        required: false
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-claidb}
       POSTGRES_USER: ${POSTGRES_USER:-claiapp}
@@ -24,7 +29,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file: .env
+    env_file:
+      - path: .env.dev
+        required: false
+      - path: .env
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-claidb}

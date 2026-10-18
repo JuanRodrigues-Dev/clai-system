@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: clai-postgres-prod
+    restart: always
+    env_file:
+      - path: .env.prod
+        required: false
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-claidb}
+      POSTGRES_USER: ${POSTGRES_USER:-claiapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-claiapp} -d ${POSTGRES_DB:-claidb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./apps/clai-backend
+      dockerfile: Dockerfile
+    container_name: clai-backend-prod
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env.prod
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-claidb}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-claiapp}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    # Em produção, as portas internas não são expostas diretamente ao host,
+    # sendo acessadas pelo Gateway Nginx (porta 80/443).
+
+volumes:
+  postgres_data_prod:
