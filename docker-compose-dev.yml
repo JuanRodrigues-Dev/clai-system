@@ -1,9 +1,37 @@
 services:
+  db:
+    image: postgres:17-alpine
+    container_name: clai-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-claidb}
+      POSTGRES_USER: ${POSTGRES_USER:-claiapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clai123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-claiapp} -d ${POSTGRES_DB:-claidb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./apps/clai-backend
     container_name: clai-backend-dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     env_file: .env
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-claidb}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-claiapp}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-clai123}
     ports:
       - "8080:8080"
+
+volumes:
+  postgres_data:
