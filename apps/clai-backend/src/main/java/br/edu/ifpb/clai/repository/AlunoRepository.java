@@ -14,4 +14,5 @@ public interface AlunoRepository extends JpaRepository<Aluno, UUID> {
     Optional<Aluno> findByMatriculaAndAtivoTrue(String matricula);
     Page<Aluno> findByAtivoTrue(Pageable pageable);
     boolean existsByMatricula(String matricula);
+    Optional<Aluno> findByMatricula(String matricula); 
 }
