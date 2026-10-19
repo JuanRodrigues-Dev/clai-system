@@ -42,7 +42,7 @@ export default function LoginPage() {
     event.preventDefault()
  
     if (!username.trim() || !password) {
-      setError('Informe usuário e senha.')
+      setError('Informe e-mail e senha.')
       return
     }
  
@@ -143,13 +143,14 @@ export default function LoginPage() {
                   htmlFor="username"
                   className="mb-2 block text-sm font-semibold text-clai-900"
                 >
-                  Usuário ou e-mail
+                  E-mail
                 </label>
                 <input
                   id="username"
+                  type="email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Digite seu usuário ou e-mail"
+                  placeholder="Digite seu e-mail"
                   autoComplete="username"
                   className="h-12 w-full rounded-lg border border-blue-200 px-4 text-slate-900 placeholder:text-slate-500 focus:border-clai-700 focus:outline-none focus:ring-2 focus:ring-clai-700/30"
                 />

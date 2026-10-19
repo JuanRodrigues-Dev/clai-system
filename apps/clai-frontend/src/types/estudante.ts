@@ -1,11 +1,21 @@
-//Mudar Quando decidir o que estudante 
 export interface Estudante {
-  id: number
-  nome: string
+  id: string // UUID
   matricula: string
-  cpf: string
-  dataNascimento: string //
+  nome: string
+  curso: string
+  origemIdentificacao: string
+  dtCriacao: string // data e hora ISO (Instant)
+  ativo: boolean
 }
-
-// tudo de Estudante, menos o id (que o backend gera)
-export type NovoEstudante = Omit<Estudante, 'id'>
+ 
+// O que o front envia ao cadastrar (AlunoRequest). O id e os demais campos o backend gera.
+export type NovoEstudante = Pick<Estudante, 'matricula' | 'nome' | 'curso' | 'origemIdentificacao'>
+ 
+// Página de resultados já no formato do front: "pagina" começa em 1 (a API começa em 0)
+export interface Pagina<T> {
+  itens: T[]
+  total: number
+  totalPaginas: number
+  pagina: number
+  tamanho: number
+}
