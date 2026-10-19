@@ -1,0 +1,1 @@
+status aceita, pendente de confirmação pelo professor. Registre que o banco é o Supabase, acessado por variáveis de ambiente, fora do Docker Compose. Inclua a alternativa de Postgres local no Compose e as consequências (migrações Flyway, revisão de RLS antes do deploy).

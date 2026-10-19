@@ -1,0 +1,1 @@
+crie uma tabela com os marcos (infraestrutura, autenticação e CRUD, gateway, frontend, testes e documentação, entrega). Deixe as datas em branco por enquanto.

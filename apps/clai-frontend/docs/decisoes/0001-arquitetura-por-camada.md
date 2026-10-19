@@ -1,0 +1,1 @@
+status aceita, contexto, decisão (pacote base br.edu.ifpb.clai com controller, service, repository, model e config), alternativas descartadas (organização por funcionalidade e Hexagonal/Clean) e consequências.
