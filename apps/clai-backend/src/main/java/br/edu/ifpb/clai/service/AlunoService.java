@@ -3,6 +3,8 @@ package br.edu.ifpb.clai.service;
 import br.edu.ifpb.clai.model.Aluno;
 import br.edu.ifpb.clai.model.dto.AlunoRequest;
 import br.edu.ifpb.clai.model.dto.AlunoResponse;
+import br.edu.ifpb.clai.model.dto.AlunoUpdateRequest;
+import br.edu.ifpb.clai.model.dto.AlunoUpdateStatusRequest;
 import br.edu.ifpb.clai.repository.AlunoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,5 +48,27 @@ public class AlunoService {
         Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(matricula)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado ou inativo."));
         return AlunoResponse.fromEntity(aluno);
+    }
+
+    @Transactional
+    public AlunoResponse atualizar(String matricula, AlunoUpdateRequest request) {
+        Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(matricula)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado ou inativo."));
+
+        aluno.setNome(request.nome());
+        aluno.setCurso(request.curso());
+        aluno.setOrigemIdentificacao(request.origemIdentificacao());
+
+        Aluno salvo = alunoRepository.save(aluno);
+        return AlunoResponse.fromEntity(salvo);
+    }
+
+    @Transactional
+    public void atualizarStatus(String matricula, AlunoUpdateStatusRequest request) {
+        Aluno aluno = alunoRepository.findByMatricula(matricula)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado."));
+        
+        aluno.setAtivo(request.ativo());
+        alunoRepository.save(aluno);
     }
 }

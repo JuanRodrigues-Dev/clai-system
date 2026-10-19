@@ -2,6 +2,8 @@ package br.edu.ifpb.clai.controller;
 
 import br.edu.ifpb.clai.model.dto.AlunoRequest;
 import br.edu.ifpb.clai.model.dto.AlunoResponse;
+import br.edu.ifpb.clai.model.dto.AlunoUpdateRequest;
+import br.edu.ifpb.clai.model.dto.AlunoUpdateStatusRequest;
 import br.edu.ifpb.clai.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -42,5 +44,16 @@ public class AlunoController {
     public ResponseEntity<AlunoResponse> buscarPorMatricula(@PathVariable String matricula) {
         AlunoResponse response = alunoService.buscarPorMatricula(matricula);
         return ResponseEntity.ok(response);
+    }
+    @PutMapping("/{matricula}")
+    public ResponseEntity<AlunoResponse> atualizar(@PathVariable String matricula, @RequestBody @Valid AlunoUpdateRequest request) {
+        AlunoResponse response = alunoService.atualizar(matricula, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{matricula}")
+    public ResponseEntity<Void> atualizarStatus(@PathVariable String matricula, @RequestBody @Valid AlunoUpdateStatusRequest request) {
+        alunoService.atualizarStatus(matricula, request);
+        return ResponseEntity.noContent().build();
     }
 }
