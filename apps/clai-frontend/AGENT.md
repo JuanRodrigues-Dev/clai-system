@@ -44,13 +44,13 @@ Reinicie o `npm run dev` ao mudar qualquer `.env`.
  
 | Variável        | Uso                                                              |
 | --------------- | ---------------------------------------------------------------- |
-| `VITE_API_URL`  | URL base da API. Usar `/api` (o gateway ou o proxy do Vite roteia) |
-| `VITE_USE_MOCK` | `true` liga o login e a lista simulados enquanto o backend não existe |
+| `VITE_API_URL`  | URL base da API. Padrão `/api` (o gateway ou o proxy do Vite roteia) |
+| `VITE_USE_MOCK` | `false` por padrão; se `true`, liga apenas o login simulado em `authService.ts` |
  
-- Versionar só `.env.example` (nomes das variáveis, sem valores reais).
+- Versionar só `.env.example` (nomes das variáveis, sem credenciais).
 - Os arquivos `.env.dev` e `.env.prod` **não são versionados**.
 - O usuário e a senha do login simulado ficam apenas em
-  `src/features/auth/authService.ts` (fictícios, só funcionam com o mock ligado).
+  `src/features/auth/authService.ts` (fictícios, só funcionam com `VITE_USE_MOCK=true`).
 ## 5. Estrutura de pastas
  
 Organização **por funcionalidade** (package by feature):
@@ -58,19 +58,20 @@ Organização **por funcionalidade** (package by feature):
 ```plaintext
 src/
 ├── api/
-│   └── http.ts                 # cliente Axios: token no header e tratamento de 401
+│   └── http.ts                 # cliente Axios (baseURL '/api'): token no header e tratamento de 401
 ├── assets/                     # logos e imagens (clai-logo.svg, ilustracao.png)
 ├── features/
 │   ├── auth/                   # LoginPage, authService, authContext, AuthProvider,
 │   │                           # useAuth, ProtectedRoute
 │   ├── inicio/                 # InicioPage
 │   └── estudantes/             # EstudantesListPage, EstudanteFormPage, estudanteService,
-│                               # formatadores
+│                               # validacao
 ├── shared/
-│   └── Layout.tsx              # sidebar + cabeçalho com título da página + <Outlet />
+│   ├── Layout.tsx              # sidebar + cabeçalho com título da página + <Outlet />
+│   └── feedback/               # Mensagem, ToastProvider, toastContext, useToast
 ├── types/                      # auth.ts, estudante.ts
 ├── App.tsx                     # rotas
-├── main.tsx                    # BrowserRouter + AuthProvider
+├── main.tsx                    # BrowserRouter + AuthProvider + ToastProvider
 └── index.css                   # Tailwind, @theme (cores e fonte)
 ```
  
@@ -95,33 +96,22 @@ Novas funcionalidades (estudo de caso, atendimento etc.) ganham a sua pasta em
   login, limpa o token e volta para `/login`.
 - **O front só esconde telas; a autorização real é do backend.** Nunca tratar a
   ocultação de um botão como controle de acesso.
-## 7. Contrato da API (proposta, alinhar com o backend)
+## 7. Contrato da API (integrado com o backend)
  
-- `POST /api/auth/login` com `{ username, password }`, retorna `200 { token }`
-  ou `401` (sem revelar se o usuário existe).
-- `GET /api/estudantes` retorna lista (vazia se não houver registros).
-- `POST /api/estudantes` retorna `201` com o estudante, `400` com erros por
-  campo, ou `409` em duplicidade.
-- Busca e paginação (`?q=`, `?page=`, `?size=`) dependem de combinar com o back.
-- Por enquanto a lista, a busca e a paginação (5 por página) funcionam no front,
-  sobre o `GET /api/estudantes`, que devolve tudo. Quando o back tiver paginação,
-  mover isso para o servidor e usar o total devolvido pela API no card do Início.
-## 8. Dados do estudante: provisórios
+- `POST /api/auth/login` com `{ username, password }` (`username` recebe o e-mail e é aceito via `@JsonAlias` no backend), retorna `200 { token }` ou `401` (sem revelar se o usuário existe).
+- `GET /api/v1/aluno?page={p}&size={s}` retorna página do Spring (`content`, metadados em `page` ou na raiz), ordenada por `nome` e contendo apenas estudantes com `ativo = true`. A tela usa página iniciando em `1` e converte para `0-based` na chamada.
+- `POST /api/v1/aluno` com `{ matricula, nome, curso, origemIdentificacao }` retorna `201` com o estudante criado, `400` para dados inválidos ou `409` em duplicidade de matrícula (lança `EstudanteDuplicadoError`).
+- `InicioPage` consulta `listarEstudantes(1, 1)` para exibir o total real (`totalElements`) retornado pelo backend.
+- Endpoints já disponíveis no backend para próximas telas: `GET /api/v1/aluno/{matricula}`, `PUT /api/v1/aluno/{matricula}` e `PATCH /api/v1/aluno/{matricula}`.
+## 8. Dados do estudante
  
-Os campos de estudante usados no esboço e em `types/estudante.ts` são
-**fictícios**, só para ilustrar o layout. Os campos reais ainda precisam ser
-validados com a CLAI e com o backend. Por isso:
+Os campos em `types/estudante.ts` seguem o contrato do backend (`AlunoResponse` e `AlunoRequest`):
  
-- Concentrar os campos em `types/estudante.ts`; formulário e tabela devem
-  depender desse tipo para a troca ser fácil.
-- Dados de exemplo (mock) devem ser claramente fictícios.
-- Não assumir CPF, endereço ou outros dados pessoais como obrigatórios.
-- Hoje `types/estudante.ts` tem: `id`, `nome`, `matricula`, `cpf` e
-  `dataNascimento` (todos provisórios).
-- As colunas da tabela ficam em uma lista no topo de `EstudantesListPage.tsx`.
-  Trocar pelos campos reais = editar essa lista e `types/estudante.ts`.
-- Com `VITE_USE_MOCK=true`, `estudanteService.ts` devolve 24 estudantes
-  fictícios.
+- `Estudante`: `id` (`string`, UUID), `matricula` (`string`), `nome` (`string`), `curso` (`string`), `origemIdentificacao` (`string`), `dtCriacao` (`string`, ISO Instant) e `ativo` (`boolean`).
+- `NovoEstudante`: `Pick<Estudante, 'matricula' | 'nome' | 'curso' | 'origemIdentificacao'>`.
+- `Pagina<T>`: `{ itens, total, totalPaginas, pagina, tamanho }`.
+- Validação no front (`validacao.ts`) espelha os limites do backend (`matricula` ≤ 50, `nome` ≤ 255, `curso` ≤ 150, `origemIdentificacao` ≤ 100), mantendo o backend como autoridade final.
+- As colunas da tabela ficam concentradas no topo de `EstudantesListPage.tsx` e os campos do formulário no topo de `EstudanteFormPage.tsx`.
 ## 9. Regras de produto e privacidade
  
 - Dados de saúde e necessidades são sensíveis (LGPD): coletar e exibir só o
@@ -130,12 +120,11 @@ validados com a CLAI e com o backend. Por isso:
   mensagens de erro.
 - Erro de login é sempre genérico ("Usuário ou senha inválidos.").
 - Fora do escopo da Sprint 1: Relatórios, Configurações, notificações (sino),
-  dados reais do dashboard, exclusão de estudante. Não criar esses itens sem
-  combinar. Itens futuros ficam escondidos ou desabilitados ("em breve").
+  dados reais do dashboard além do total de estudantes, exclusão de estudante.
+  Não criar esses itens sem combinar. Itens futuros ficam escondidos ou
+  desabilitados ("em breve").
 - Dashboard: mostrar apenas números que existam de verdade; nunca inventar
   indicadores.
-- Na lista, o CPF aparece mascarado (`mascararCpf` em `formatadores.ts`):
-  exibir só o necessário.
 ## 10. Convenções de código
  
 - Componentes funcionais; páginas com `export default`.
@@ -189,28 +178,28 @@ Concluído (entregue no código):
  
 - F01: projeto Vite + React + TypeScript criado em `apps/clai-frontend`
 - F02: estrutura de pastas e rotas
-- F03: cliente HTTP (`api/http.ts`) e variáveis de ambiente
-- F04: tela de login com o design da CLAI (Tailwind), com mock
+- F03: cliente HTTP (`api/http.ts`) com fallback `/api` e variáveis de ambiente
+- F04: tela de login com o design da CLAI (Tailwind), ajustada para login com e-mail
 - F05: contexto de autenticação, rota protegida, `Layout` com sidebar,
   cabeçalho e botão Sair, página Início com ações rápidas
-- F06: lista de estudantes (busca, paginação de 5 em 5, estados de carregando,
-  erro e vazio), serviço com dados fictícios e card "Total de estudantes" no
-  Início
+- F06: lista de estudantes com estados de carregando, erro e vazio e card
+  "Total de estudantes" no Início
+- F07: formulário de cadastro de estudante (`EstudanteFormPage.tsx`,
+  `validacao.ts`) e componentes reutilizáveis de feedback (`Mensagem`,
+  `ToastProvider`, `useToast`)
+- F08: `Dockerfile` multi-stage (build + Nginx) e `nginx.conf` integrados ao
+  gateway e ao Docker Compose
+- Issue #91: integração do frontend com a API real (`/auth/login` e
+  `/v1/aluno`), paginação no servidor, contagem real no Início, remoção dos
+  dados fictícios de estudantes e tratamento de matrícula duplicada (`409`)
+
 Próximos passos:
  
-- F07: formulário de cadastro de estudante (campos provisórios), com validação e
-  cadastro simulado
-- Componentes de feedback reutilizáveis: mensagem de sucesso, de erro e de
-  carregamento (hoje só a lista tem os seus estados próprios)
-- Ver, editar e excluir estudante: fora da Sprint 1 (ver e editar quando houver
-  as telas; excluir só se virar requisito)
-- F08: Dockerfile do front (build + Nginx) para entrar no Compose
-- Depois: integrar com a API real (desligar o mock) e atualizar o contrato
+- Telas/ações de visualizar, editar (`PUT /v1/aluno/{matricula}`) e inativar
+  estudante (`PATCH /v1/aluno/{matricula}`) quando entrarem no escopo
+- Busca por matrícula/nome na listagem (`GET /v1/aluno/{matricula}` ou filtro)
+
 Em aberto:
  
-- Campos reais do estudante (validar com a CLAI e com o backend)
-- Busca e paginação no servidor (depende do contrato com o backend)
-- Estratégia de autenticação definida pelo backend (JWT?) e dados extras no
-  login (nome, perfil, expiração)
 - Fonte única do app (Inter ou Plus Jakarta Sans)
-- Teste automatizado do front (ainda não há)
+- Testes automatizados do front (ainda não há)
