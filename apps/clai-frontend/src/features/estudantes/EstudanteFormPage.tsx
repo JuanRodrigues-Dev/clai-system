@@ -6,7 +6,7 @@ import type { NovoEstudante } from '../../types/estudante'
 import { Mensagem } from '../../shared/feedback/Mensagem'
 import { useToast } from '../../shared/feedback/useToast'
 import { cadastrarEstudante, EstudanteDuplicadoError } from './estudanteService'
-import { formatarCpfDigitado, hojeISO, validar } from './validacao'
+import { validar } from './validacao'
 import type { Erros } from './validacao'
  
 interface Campo {
@@ -19,16 +19,14 @@ interface Campo {
   maxLength?: number
 }
  
-// Campos PROVISÓRIOS, todos obrigatórios por enquanto. Quando os campos reais forem
-// definidos, a troca é aqui, em types/estudante.ts e em validacao.ts.
 const campos: Campo[] = [
-  { name: 'nome', label: 'Nome completo', placeholder: 'Digite o nome completo', autoComplete: 'off' },
-  { name: 'dataNascimento', label: 'Data de nascimento', type: 'date' },
-  { name: 'cpf', label: 'CPF', placeholder: '000.000.000-00', inputMode: 'numeric', maxLength: 14 },
-  { name: 'matricula', label: 'Matrícula', placeholder: 'Digite a matrícula', maxLength: 20 },
+  { name: 'matricula', label: 'Matrícula', placeholder: 'Digite a matrícula', maxLength: 50 },
+  { name: 'nome', label: 'Nome completo', placeholder: 'Digite o nome completo', autoComplete: 'off', maxLength: 255 },
+  { name: 'curso', label: 'Curso', placeholder: 'Digite o curso', maxLength: 150 },
+  { name: 'origemIdentificacao', label: 'Origem da identificação', placeholder: 'Como o estudante foi identificado', maxLength: 100 },
 ]
- 
-const VALORES_INICIAIS: NovoEstudante = { nome: '', dataNascimento: '', cpf: '', matricula: '' }
+
+const VALORES_INICIAIS: NovoEstudante = { matricula: '', nome: '', curso: '', origemIdentificacao: '' }
  
 export default function EstudanteFormPage() {
   const navigate = useNavigate()
@@ -41,7 +39,7 @@ export default function EstudanteFormPage() {
   function alterar(name: keyof NovoEstudante, valor: string) {
     setValores((atuais) => ({
       ...atuais,
-      [name]: name === 'cpf' ? formatarCpfDigitado(valor) : valor,
+      [name]: valor,
     }))
     setErros((atuais) => ({ ...atuais, [name]: undefined }))
     setErroServidor('')
@@ -65,17 +63,17 @@ export default function EstudanteFormPage() {
     setEnviando(true)
     try {
       await cadastrarEstudante({
-        ...valores,
-        nome: valores.nome.trim(),
         matricula: valores.matricula.trim(),
-        cpf: valores.cpf.replace(/\D/g, ''), // envia só os dígitos
+        nome: valores.nome.trim(),
+        curso: valores.curso.trim(),
+        origemIdentificacao: valores.origemIdentificacao.trim(),
       })
       mostrarSucesso('Estudante cadastrado com sucesso.')
       navigate('/estudantes')
     } catch (error) {
       if (error instanceof EstudanteDuplicadoError) {
-        setErroServidor('O CPF informado já está cadastrado no sistema.')
-        document.getElementById('cpf')?.focus()
+        setErroServidor('A matrícula informada já está cadastrada no sistema.')
+        document.getElementById('matricula')?.focus()
       } else {
         setErroServidor('Não foi possível salvar o estudante. Tente novamente.')
       }
@@ -118,7 +116,6 @@ export default function EstudanteFormPage() {
                   autoComplete={campo.autoComplete}
                   maxLength={campo.maxLength}
                   placeholder={campo.placeholder}
-                  max={campo.type === 'date' ? hojeISO() : undefined}
                   value={valores[campo.name]}
                   onChange={(e) => alterar(campo.name, e.target.value)}
                   required

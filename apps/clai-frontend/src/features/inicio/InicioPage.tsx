@@ -22,13 +22,12 @@ export default function InicioPage() {
     const [total, setTotal] = useState<number | null>(null)
     const [erro, setErro] = useState(false)
 
-    // Por enquanto o total vem da própria lista. Quando o backend tiver paginação,
-    // trocar pelo total devolvido pela API (ou por um endpoint de contagem).
+    // O total vem do servidor: pede 1 estudante e lê o total.
     useEffect(() => {
       let ativo = true
-      listarEstudantes()
-        .then((lista) => {
-          if (ativo) setTotal(lista.length)
+      listarEstudantes(1, 1)
+        .then((pagina) => {
+          if (ativo) setTotal(pagina.total)
         })
         .catch(() => {
           if (ativo) setErro(true)
