@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, LoaderCircle, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Estudante } from '../../types/estudante'
-import { listarEstudantes } from './estudanteService'
+import { inativarEstudante, listarCursosAtivos, listarEstudantes } from './estudanteService'
+import type { Curso } from './estudanteService'
  
-const TAMANHO_PAGINA = 5
+const OPCOES_TAMANHO_PAGINA = [5, 10, 20]
  
 // Colunas da tabela em um único lugar: quando os campos reais forem definidos,
 // a troca é aqui e em types/estudante.ts.
@@ -27,15 +28,26 @@ type Status = 'carregando' | 'ok' | 'erro'
  
 export default function EstudantesListPage() {
   const [estudantes, setEstudantes] = useState<Estudante[]>([])
+  const [cursos, setCursos] = useState<Curso[]>([])
+  const [busca, setBusca] = useState('')
+  const [cursoFiltro, setCursoFiltro] = useState('')
   const [total, setTotal] = useState(0)
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [status, setStatus] = useState<Status>('carregando')
   const [paginaAtual, setPagina] = useState(1)
+  const [tamanhoPagina, setTamanhoPagina] = useState(5)
+
+  useEffect(() => {
+    listarCursosAtivos().then(setCursos).catch(() => setCursos([]))
+  }, [])
 
   const carregar = useCallback(async () => {
     setStatus('carregando')
     try {
-      const resultado = await listarEstudantes(paginaAtual, TAMANHO_PAGINA)
+      const resultado = await listarEstudantes(paginaAtual, tamanhoPagina, {
+        busca: busca.trim() || undefined,
+        curso: cursoFiltro || undefined,
+      })
       setEstudantes(resultado.itens)
       setTotal(resultado.total)
       setTotalPaginas(Math.max(1, resultado.totalPaginas))
@@ -43,15 +55,66 @@ export default function EstudantesListPage() {
     } catch {
       setStatus('erro')
     }
-  }, [paginaAtual])
+  }, [paginaAtual, tamanhoPagina, busca, cursoFiltro])
 
   useEffect(() => {
     carregar()
   }, [carregar])
+
+  const estudantesFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase()
+    return estudantes.filter((e) => {
+      const correspondeBusca =
+        !termo ||
+        e.nome.toLowerCase().includes(termo) ||
+        e.matricula.toLowerCase().includes(termo)
+      const correspondeCurso = !cursoFiltro || e.curso === cursoFiltro
+      return correspondeBusca && correspondeCurso
+    })
+  }, [estudantes, busca, cursoFiltro])
+
+  async function handleInativar(estudante: Estudante) {
+    if (!window.confirm(`Deseja realmente inativar o estudante ${estudante.nome}?`)) return
+    try {
+      await inativarEstudante(estudante.matricula)
+      await carregar()
+    } catch {
+      setStatus('erro')
+    }
+  }
  
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-3"> 
+      <div className="flex flex-wrap items-center justify-between gap-3"> 
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <input
+            type="search"
+            aria-label="Filtrar por nome ou matrícula"
+            placeholder="Buscar por nome ou matrícula..."
+            value={busca}
+            onChange={(e) => {
+              setBusca(e.target.value)
+              setPagina(1)
+            }}
+            className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/30 sm:max-w-xs"
+          />
+          <select
+            aria-label="Filtrar por curso"
+            value={cursoFiltro}
+            onChange={(e) => {
+              setCursoFiltro(e.target.value)
+              setPagina(1)
+            }}
+            className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/30 sm:w-auto"
+          >
+            <option value="">Todos os cursos</option>
+            {cursos.map((curso) => (
+              <option key={curso.id ?? curso.nome} value={curso.nome}>
+                {curso.nome}
+              </option>
+            ))}
+          </select>
+        </div>
         <Link
           to="/estudantes/novo"
           className="inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
@@ -83,7 +146,7 @@ export default function EstudantesListPage() {
           </div>
         )}
  
-        {status === 'ok' && total === 0 && (
+        {status === 'ok' && estudantesFiltrados.length === 0 && (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
             <p className="font-semibold text-slate-800">Nenhum estudante cadastrado ainda.</p>
             <Link to="/estudantes/novo" className="text-sm font-semibold text-blue-600 hover:underline">
@@ -92,8 +155,9 @@ export default function EstudantesListPage() {
           </div>
         )}
  
-        {status === 'ok' && total > 0 && (
+        {status === 'ok' && (
           <>
+            {estudantesFiltrados.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[40rem] text-left text-sm">
                 <caption className="sr-only">Lista de estudantes</caption>
@@ -104,10 +168,13 @@ export default function EstudantesListPage() {
                         {coluna.titulo}
                       </th>
                     ))}
+                    <th scope="col" className="px-5 py-3 text-right font-medium">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {estudantes.map((estudante) => (
+                  {estudantesFiltrados.map((estudante) => (
                     <tr key={estudante.id}>
                       {colunas.map((coluna) => (
                         <td
@@ -117,19 +184,47 @@ export default function EstudantesListPage() {
                           {coluna.render(estudante)}
                         </td>
                       ))}
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleInativar(estudante)}
+                          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                        >
+                          Inativar
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            )}
  
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-4">
-              <p className="text-sm text-slate-600">
-                Mostrando {estudantes.length} de {total}{' '}
-                {total === 1 ? 'estudante' : 'estudantes'}
-              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <p className="text-sm text-slate-600">
+                  Mostrando {estudantesFiltrados.length} de {total}{' '}
+                  {total === 1 ? 'estudante' : 'estudantes'}
+                </p>
+                <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <span>Itens por página:</span>
+                  <select
+                    value={tamanhoPagina}
+                    onChange={(e) => {
+                      setTamanhoPagina(Number(e.target.value))
+                      setPagina(1)
+                    }}
+                    className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                  >
+                    {OPCOES_TAMANHO_PAGINA.map((opcao) => (
+                      <option key={opcao} value={opcao}>
+                        {opcao}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
  
-              {totalPaginas > 1 && (
                 <nav aria-label="Paginação" className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -168,7 +263,6 @@ export default function EstudantesListPage() {
                     <ChevronRight className="size-5" aria-hidden="true" />
                   </button>
                 </nav>
-              )}
             </div>
           </>
         )}
