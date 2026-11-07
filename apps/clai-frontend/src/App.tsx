@@ -16,6 +16,7 @@ export default function App() {
           <Route path="/inicio" element={<InicioPage />} />
           <Route path="/estudantes" element={<EstudantesListPage />} />
           <Route path="/estudantes/novo" element={<EstudanteFormPage />} />
+          <Route path="/estudantes/:matricula/editar" element={<EstudanteFormPage />} />
         </Route>
       </Route>
 
