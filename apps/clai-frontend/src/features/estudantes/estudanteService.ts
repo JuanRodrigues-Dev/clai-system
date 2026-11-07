@@ -44,3 +44,27 @@ export async function cadastrarEstudante(dados: NovoEstudante): Promise<Estudant
     throw error
   }
 }
+
+export interface Curso {
+  id?: string
+  nome: string
+  ativo?: boolean
+}
+
+export type AtualizarEstudantePayload = Pick<NovoEstudante, 'nome' | 'curso' | 'origemIdentificacao'>
+
+export async function buscarEstudantePorMatricula(matricula: string): Promise<Estudante> {
+  const response = await http.get<Estudante>(`/alunos/${encodeURIComponent(matricula)}`)
+  return response.data
+}
+
+export async function atualizarEstudante(matricula: string, payload: AtualizarEstudantePayload): Promise<Estudante> {
+  const response = await http.put<Estudante>(`/alunos/${encodeURIComponent(matricula)}`, payload)
+  return response.data
+}
+
+export async function listarCursosAtivos(): Promise<Curso[]> {
+  const response = await http.get<Curso[] | { content: Curso[] }>('/cursos')
+  const lista = Array.isArray(response.data) ? response.data : (response.data?.content ?? [])
+  return lista.filter((curso) => curso.ativo !== false)
+}
