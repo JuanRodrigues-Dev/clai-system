@@ -12,6 +12,7 @@ const titulos: Record<string, string> = {
   '/inicio': 'Início',
   '/estudantes': 'Estudantes',
   '/estudantes/novo': 'Cadastrar estudante',
+  '/perfil': 'Meu perfil e permissões',
 }
 
 // fixo na Sprint 1 (único usuário: administrador global)
@@ -34,7 +35,9 @@ export default function Layout() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const titulo = titulos[pathname] ?? 'CLAI'
+  const titulo =
+    titulos[pathname] ??
+    (pathname.endsWith('/editar') ? 'Editar estudante' : 'CLAI')
 
   useEffect(() => {
     document.title = `${titulo} · CLAI`
@@ -65,10 +68,20 @@ export default function Layout() {
         </nav>
 
         <div className="border-t border-white/10 pt-4">
-          <div className="mb-2 flex items-center gap-3 px-3">
+          <NavLink
+            to="/perfil"
+            className={({ isActive }) =>
+              `mb-2 flex items-center gap-3 rounded-lg px-3 py-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                isActive ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'
+              }`
+            }
+          >
             <Avatar />
-            <span className="text-sm font-semibold">{NOME_USUARIO}</span>
-          </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{NOME_USUARIO}</p>
+              <p className="truncate text-xs text-blue-200">Ver perfil e permissões</p>
+            </div>
+          </NavLink>
           <button
               type="button"
               onClick={handleSignOut}
@@ -80,7 +93,7 @@ export default function Layout() {
        </div>
       </aside>
 
-            <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col">
         {/* Barra superior (telas pequenas): navegação + sair */}
         <div className="flex items-center justify-between bg-clai-950 px-4 py-3 text-white lg:hidden">
           <nav aria-label="Principal" className="flex gap-1">
@@ -91,23 +104,35 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            aria-label="Sair"
-            className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            <LogOut className="size-5" aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-1">
+            <NavLink
+              to="/perfil"
+              aria-label="Meu perfil e permissões"
+              className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <User className="size-5" aria-hidden="true" />
+            </NavLink>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              aria-label="Sair"
+              className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <LogOut className="size-5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Cabeçalho: título da página + usuário */}
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8">
           <h1 className="text-xl font-bold text-clai-950 lg:text-2xl">{titulo}</h1>
-          <div className="hidden items-center gap-3 lg:flex">
+          <NavLink
+            to="/perfil"
+            className="hidden items-center gap-3 rounded-lg px-2.5 py-1.5 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 lg:flex"
+          >
             <Avatar />
             <span className="text-sm font-semibold text-slate-800">{NOME_USUARIO}</span>
-          </div>
+          </NavLink>
         </header>
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 lg:px-8 lg:py-8">
