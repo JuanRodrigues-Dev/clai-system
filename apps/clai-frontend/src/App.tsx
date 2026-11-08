@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './features/auth/LoginPage'
+import MeuPerfilPage from './features/auth/MeuPerfilPage'
 import ProtectedRoute from './features/auth/ProtectedRoute'
 import Layout from './shared/Layout'
 import InicioPage from './features/inicio/InicioPage'
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/estudantes" element={<EstudantesListPage />} />
           <Route path="/estudantes/novo" element={<EstudanteFormPage />} />
           <Route path="/estudantes/:matricula/editar" element={<EstudanteFormPage />} />
+          <Route path="/perfil" element={<MeuPerfilPage />} />
         </Route>
       </Route>
 
