@@ -4,6 +4,7 @@ import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.LoginRequest;
 import br.edu.ifpb.clai.model.dto.TokenResponse;
 import br.edu.ifpb.clai.repository.UsuarioRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,15 @@ public class AuthService {
             throw new CredenciaisInvalidasException();
         }
 
-        String token = jwtService.gerarToken(usuarioOpt.get());
+        Usuario usuario = usuarioOpt.get();
+        if (usuario.getId() != null) {
+            List<String> roles = usuarioRepository.findRoleNamesByUsuarioId(usuario.getId());
+            if (roles != null && !roles.isEmpty()) {
+                usuario.setRoles(roles);
+            }
+        }
+
+        String token = jwtService.gerarToken(usuario);
         return new TokenResponse(token);
     }
 }

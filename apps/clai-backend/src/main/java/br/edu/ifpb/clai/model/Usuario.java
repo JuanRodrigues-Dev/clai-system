@@ -8,7 +8,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -30,6 +32,9 @@ public class Usuario {
 
     @Column(nullable = false)
     private boolean ativo = true;
+
+    @Transient
+    private List<String> roles = List.of("ROLE_ADMIN");
 
     protected Usuario() {
         // construtor exigido pelo JPA
@@ -66,5 +71,13 @@ public class Usuario {
 
     public boolean isAtivo() {
         return ativo;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = (roles == null || roles.isEmpty()) ? List.of("ROLE_ADMIN") : List.copyOf(roles);
     }
 }

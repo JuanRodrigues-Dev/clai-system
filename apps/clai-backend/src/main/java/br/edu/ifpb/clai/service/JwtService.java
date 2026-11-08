@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.Mac;
@@ -52,6 +53,10 @@ public class JwtService {
         if (usuario.getId() != null) {
             payload.put("uid", usuario.getId());
         }
+        List<String> roles = (usuario.getRoles() == null || usuario.getRoles().isEmpty())
+                ? List.of("ROLE_ADMIN")
+                : List.copyOf(usuario.getRoles());
+        payload.put("roles", roles);
         payload.put("iat", agora.getEpochSecond());
         payload.put("exp", expiracao.getEpochSecond());
 
@@ -64,6 +69,29 @@ public class JwtService {
     }
 
     public Optional<String> validarEExtrairSubject(String token) {
+        return extrairClaimsValidadas(token).map(claims -> (String) claims.get("sub"));
+    }
+
+    public List<String> extrairRoles(String token) {
+        return extrairClaimsValidadas(token)
+                .map(claims -> {
+                    Object rolesObj = claims.get("roles");
+                    if (rolesObj instanceof List<?> lista) {
+                        List<String> roles = lista.stream()
+                                .filter(String.class::isInstance)
+                                .map(String.class::cast)
+                                .filter(r -> !r.isBlank())
+                                .toList();
+                        if (!roles.isEmpty()) {
+                            return roles;
+                        }
+                    }
+                    return List.of("ROLE_ADMIN");
+                })
+                .orElse(List.of());
+    }
+
+    private Optional<Map<String, Object>> extrairClaimsValidadas(String token) {
         if (token == null || token.isBlank()) {
             return Optional.empty();
         }
@@ -98,7 +126,7 @@ public class JwtService {
                 return Optional.empty();
             }
 
-            return Optional.of(sub);
+            return Optional.of(claims);
         } catch (Exception e) {
             return Optional.empty();
         }
