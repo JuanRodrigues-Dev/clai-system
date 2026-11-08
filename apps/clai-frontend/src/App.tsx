@@ -6,6 +6,7 @@ import Layout from './shared/Layout'
 import InicioPage from './features/inicio/InicioPage'
 import EstudantesListPage from './features/estudantes/EstudantesListPage'
 import EstudanteFormPage from './features/estudantes/EstudanteFormPage'
+import InformacoesAcademicasPage from './features/academico/InformacoesAcademicasPage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/estudantes" element={<EstudantesListPage />} />
           <Route path="/estudantes/novo" element={<EstudanteFormPage />} />
           <Route path="/estudantes/:matricula/editar" element={<EstudanteFormPage />} />
+          <Route path="/informacoes-academicas" element={<InformacoesAcademicasPage />} />
           <Route path="/perfil" element={<MeuPerfilPage />} />
         </Route>
       </Route>
