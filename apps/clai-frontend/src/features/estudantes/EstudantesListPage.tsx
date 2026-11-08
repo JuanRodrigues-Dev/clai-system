@@ -185,13 +185,21 @@ export default function EstudantesListPage() {
                         </td>
                       ))}
                       <td className="px-5 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleInativar(estudante)}
-                          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
-                        >
-                          Inativar
-                        </button>
+                        <div className="inline-flex items-center justify-end gap-2">
+                          <Link
+                            to={`/estudantes/${encodeURIComponent(estudante.matricula)}/editar`}
+                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                          >
+                            Editar
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleInativar(estudante)}
+                            className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                          >
+                            Inativar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
