@@ -2,24 +2,30 @@ package br.edu.ifpb.clai.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.UsuarioResponse;
+import jakarta.servlet.RequestDispatcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = SecurityConfigTest.TestEndpointsController.class)
@@ -52,6 +58,21 @@ class SecurityConfigTest {
         ResponseEntity<Void> protectedEndpoint() {
             return ResponseEntity.ok().build();
         }
+
+        @GetMapping("/v1/aluno/bad-request")
+        ResponseEntity<Void> protectedBadRequestEndpoint() {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados inválidos");
+        }
+
+        @GetMapping("/v1/aluno/not-found")
+        ResponseEntity<Void> protectedNotFoundEndpoint() {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recurso não encontrado");
+        }
+
+        @GetMapping("/v1/aluno/conflict")
+        ResponseEntity<Void> protectedConflictEndpoint() {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Recurso já existente");
+        }
     }
 
     @Test
@@ -82,12 +103,55 @@ class SecurityConfigTest {
     }
 
     @Test
+    void devePermitirAcessoPublicoAoEndpointDeError() throws Exception {
+        mockMvc.perform(get("/error")
+                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 404))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/error")
+                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 400))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/error")
+                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 409))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void deveRetornar401EmRotaProtegidaSemAutenticacao() throws Exception {
         MvcResult result = mockMvc.perform(get("/v1/aluno"))
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
         assertThat(result.getRequest().getSession(false)).isNull();
+    }
+
+    @Test
+    @WithMockUser
+    void devePreservarCodigosDeErroOriginalEmRotasProtegidasAutenticadas() throws Exception {
+        mockMvc.perform(get("/v1/aluno/bad-request"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/v1/aluno/not-found"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/v1/aluno/conflict"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deveConfigurarCorsRestringindoOrigensEBloqueandoAllowCredentialsComWildcard() throws Exception {
+        mockMvc.perform(options("/v1/auth")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().doesNotExist("Access-Control-Allow-Credentials"));
+
+        mockMvc.perform(options("/v1/auth")
+                        .header("Origin", "http://malicious-site.com")
+                        .header("Access-Control-Request-Method", "POST"))
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 
     @Test
