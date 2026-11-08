@@ -1,8 +1,30 @@
 import axios from 'axios'
 
+export interface ProblemDetail {
+  type?: string
+  title?: string
+  status?: number
+  detail?: string
+  instance?: string
+}
+
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
+  headers: {
+    'X-API-Version': '1',
+  },
 })
+
+export function extrairMensagemErro(error: unknown, fallback: string): string {
+  if (axios.isAxiosError<ProblemDetail & { erro?: string; message?: string }>(error)) {
+    const dados = error.response?.data
+    if (dados?.detail) return dados.detail
+    if (dados?.erro) return dados.erro
+    if (dados?.message) return dados.message
+    if (dados?.title) return dados.title
+  }
+  return fallback
+}
 
 // anexa o token em toda requisição, se existir
 http.interceptors.request.use((config) => {

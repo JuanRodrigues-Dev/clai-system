@@ -26,7 +26,7 @@ export async function listarEstudantes(
   tamanho = 10,
   filtros?: FiltrosEstudante,
 ): Promise<Pagina<Estudante>> {
-  const response = await http.get<PaginaApi>('/v1/aluno', {
+  const response = await http.get<PaginaApi>('/alunos', {
     params: {
       page: pagina - 1,
       size: tamanho,
@@ -49,7 +49,7 @@ export async function listarEstudantes(
  
 export async function cadastrarEstudante(dados: NovoEstudante): Promise<Estudante> {
   try {
-    const response = await http.post<Estudante>('/v1/aluno', dados)
+    const response = await http.post<Estudante>('/alunos', dados)
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 409) {
