@@ -37,11 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(BEARER_PREFIX.length()).trim();
             if (!token.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
                 jwtService.validarEExtrairSubject(token).ifPresent(subject -> {
+                    List<SimpleGrantedAuthority> authorities = jwtService.extrairRoles(token).stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList();
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    subject,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                            new UsernamePasswordAuthenticationToken(subject, null, authorities);
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 });
