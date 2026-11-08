@@ -54,22 +54,22 @@ class SecurityConfigTest {
             return ResponseEntity.ok("UP");
         }
 
-        @GetMapping("/v1/aluno")
+        @GetMapping("/alunos")
         ResponseEntity<Void> protectedEndpoint() {
             return ResponseEntity.ok().build();
         }
 
-        @GetMapping("/v1/aluno/bad-request")
+        @GetMapping("/alunos/bad-request")
         ResponseEntity<Void> protectedBadRequestEndpoint() {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados inválidos");
         }
 
-        @GetMapping("/v1/aluno/not-found")
+        @GetMapping("/alunos/not-found")
         ResponseEntity<Void> protectedNotFoundEndpoint() {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recurso não encontrado");
         }
 
-        @GetMapping("/v1/aluno/conflict")
+        @GetMapping("/alunos/conflict")
         ResponseEntity<Void> protectedConflictEndpoint() {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Recurso já existente");
         }
@@ -119,7 +119,7 @@ class SecurityConfigTest {
 
     @Test
     void deveRetornar401EmRotaProtegidaSemAutenticacao() throws Exception {
-        MvcResult result = mockMvc.perform(get("/v1/aluno"))
+        MvcResult result = mockMvc.perform(get("/alunos"))
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
@@ -129,13 +129,13 @@ class SecurityConfigTest {
     @Test
     @WithMockUser
     void devePreservarCodigosDeErroOriginalEmRotasProtegidasAutenticadas() throws Exception {
-        mockMvc.perform(get("/v1/aluno/bad-request"))
+        mockMvc.perform(get("/alunos/bad-request"))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(get("/v1/aluno/not-found"))
+        mockMvc.perform(get("/alunos/not-found"))
                 .andExpect(status().isNotFound());
 
-        mockMvc.perform(get("/v1/aluno/conflict"))
+        mockMvc.perform(get("/alunos/conflict"))
                 .andExpect(status().isConflict());
     }
 

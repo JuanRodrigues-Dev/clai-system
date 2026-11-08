@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/v1/aluno")
+@RequestMapping(value = "/alunos", version = "1")
 public class AlunoController {
 
     private final AlunoService alunoService;
@@ -29,7 +29,7 @@ public class AlunoController {
     @PostMapping
     public ResponseEntity<AlunoResponse> criar(@RequestBody @Valid AlunoRequest request, UriComponentsBuilder uriBuilder) {
         AlunoResponse response = alunoService.criar(request);
-        URI uri = uriBuilder.path("/v1/aluno/{matricula}").buildAndExpand(response.matricula()).toUri();
+        URI uri = uriBuilder.path("/alunos/{matricula}").buildAndExpand(response.matricula()).toUri();
         return ResponseEntity.created(uri).body(response);
     }
 

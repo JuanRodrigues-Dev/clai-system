@@ -17,6 +17,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+  mvc:
+    apiversion:
+      use:
+        header: X-API-Version
+      default: 1
 
 clai:
   admin:
