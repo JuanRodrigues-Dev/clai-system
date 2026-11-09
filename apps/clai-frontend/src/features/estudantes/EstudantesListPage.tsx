@@ -11,7 +11,17 @@ const OPCOES_TAMANHO_PAGINA = [5, 10, 20]
 // Colunas da tabela em um único lugar: quando os campos reais forem definidos,
 // a troca é aqui e em types/estudante.ts.
 const colunas: { titulo: string; render: (e: Estudante) => ReactNode; className?: string }[] = [
-  { titulo: 'Nome', render: (e) => e.nome, className: 'font-semibold text-slate-900' },
+  {
+    titulo: 'Nome',
+    render: (e) => (
+      <Link
+        to={`/estudantes/${encodeURIComponent(e.matricula)}`}
+        className="font-semibold text-slate-900 hover:text-blue-600 hover:underline"
+      >
+        {e.nome}
+      </Link>
+    ),
+  },
   { titulo: 'Matrícula', render: (e) => e.matricula },
   { titulo: 'Curso', render: (e) => e.curso },
   { titulo: 'Origem da identificação', render: (e) => e.origemIdentificacao },
@@ -186,6 +196,12 @@ export default function EstudantesListPage() {
                       ))}
                       <td className="px-5 py-4 text-right">
                         <div className="inline-flex items-center justify-end gap-2">
+                          <Link
+                            to={`/estudantes/${encodeURIComponent(estudante.matricula)}`}
+                            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                          >
+                            Prontuário
+                          </Link>
                           <Link
                             to={`/estudantes/${encodeURIComponent(estudante.matricula)}/editar`}
                             className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
