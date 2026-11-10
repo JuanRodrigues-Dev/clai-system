@@ -39,7 +39,11 @@ export default function Layout() {
   const { pathname } = useLocation()
   const titulo =
     titulos[pathname] ??
-    (pathname.endsWith('/editar') ? 'Editar estudante' : 'CLAI')
+    (pathname.endsWith('/editar')
+      ? 'Editar estudante'
+      : pathname.startsWith('/estudantes/')
+        ? 'Prontuário do estudante'
+        : 'CLAI')
 
   useEffect(() => {
     document.title = `${titulo} · CLAI`
