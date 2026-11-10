@@ -57,7 +57,7 @@ export default function Layout() {
         <img
           src={claiLogo}
           alt="CLAI"
-          className="mb-8 h-10 w-auto self-start brightness-0 invert"
+          className="mb-8 h-14 w-auto self-start brightness-0 invert"
         />
 
         <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
