@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import type { Estudante } from '../../types/estudante'
 import { buscarEstudantePorMatricula } from './estudanteService'
+import { EstudoCasoTab } from '../estudo-caso/EstudoCasoTab'
 
 type AbaProntuario = 'estudo-caso' | 'acompanhamento'
 
@@ -198,14 +199,11 @@ export default function EstudanteDetalhePage() {
       {/* Conteúdo da Aba Selecionada */}
       <div role="tabpanel">
         {abaAtiva === 'estudo-caso' && (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-bold text-slate-900">
-              Estudo de Caso e Identificação Inicial
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Registro da entrevista inicial, necessidades específicas, potencialidades, demandas e propostas iniciais de intervenção para {estudante.nome}.
-            </p>
-          </section>
+          <EstudoCasoTab
+            matricula={estudante.matricula}
+            nomeEstudante={estudante.nome}
+            cursoEstudante={estudante.curso}
+          />
         )}
 
         {abaAtiva === 'acompanhamento' && (
