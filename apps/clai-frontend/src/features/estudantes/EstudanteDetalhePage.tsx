@@ -13,6 +13,7 @@ import {
 import type { Estudante } from '../../types/estudante'
 import { buscarEstudantePorMatricula } from './estudanteService'
 import { EstudoCasoTab } from '../estudo-caso/EstudoCasoTab'
+import { AcompanhamentoAtendimentosTab } from '../acompanhamento/AcompanhamentoAtendimentosTab'
 
 type AbaProntuario = 'estudo-caso' | 'acompanhamento'
 
@@ -207,14 +208,10 @@ export default function EstudanteDetalhePage() {
         )}
 
         {abaAtiva === 'acompanhamento' && (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-bold text-slate-900">
-              Ciclo de Acompanhamento e Histórico de Atendimentos
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Gerenciamento do acompanhamento contínuo na CLAI e linha do tempo de atendimentos pontuais realizados com {estudante.nome}.
-            </p>
-          </section>
+          <AcompanhamentoAtendimentosTab
+            matricula={estudante.matricula}
+            nomeEstudante={estudante.nome}
+          />
         )}
       </div>
     </div>
