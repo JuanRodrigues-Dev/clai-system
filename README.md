@@ -192,6 +192,20 @@ O frontend iniciará em `http://localhost:5173` com proxy automático redirecion
 
 ---
 
+## 🔌 API do Backend
+
+O backend Spring Boot expõe atualmente os fluxos de autenticação, cadastro de alunos e acompanhamento. Os controllers de negócio usam versionamento por cabeçalho: envie `X-API-Version: 1`; quando o cabeçalho não é enviado, a versão padrão é `1`.
+
+| Fluxo | Rotas disponíveis |
+| :--- | :--- |
+| Autenticação | `POST /auth/login` (também `POST /v1/auth`), `GET /auth/me` |
+| Alunos | `GET` e `POST /alunos`, `GET`, `PUT` e `PATCH /alunos/{matricula}` |
+| Acompanhamento | `POST /acompanhamentos`, `GET /acompanhamentos/aluno/{matricula}`, `PUT /acompanhamentos/{id}` |
+
+As telas de Informações Acadêmicas, Estudo de Caso e Atendimentos ainda não têm controllers/services correspondentes neste backend.
+
+---
+
 ## 🌿 Padrão de Versionamento e Fluxo Git
 
 O projeto adota regras estritas de ciclo de desenvolvimento baseadas nas diretrizes de engenharia de software da instituição:
