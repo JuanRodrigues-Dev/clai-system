@@ -20,8 +20,6 @@ services:
         fromDatabase:
           name: clai-db
           property: connectionString
-      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
-        value: update
       - key: ADMIN_EMAIL
         value: admin@ifpb.edu.br
       - key: ADMIN_PASSWORD

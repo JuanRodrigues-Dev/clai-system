@@ -14,11 +14,25 @@ interface PaginaApi {
  
 // Erro de negócio: já existe estudante com a mesma matrícula (o backend responde 409)
 export class EstudanteDuplicadoError extends Error {}
+
+export interface FiltrosEstudante {
+  busca?: string
+  curso?: string
+}
  
 // "pagina" começa em 1 na tela; a API começa em 0. O backend lista só os ativos, por nome.
-export async function listarEstudantes(pagina = 1, tamanho = 10): Promise<Pagina<Estudante>> {
-  const response = await http.get<PaginaApi>('/v1/aluno', {
-    params: { page: pagina - 1, size: tamanho },
+export async function listarEstudantes(
+  pagina = 1,
+  tamanho = 10,
+  filtros?: FiltrosEstudante,
+): Promise<Pagina<Estudante>> {
+  const response = await http.get<PaginaApi>('/alunos', {
+    params: {
+      page: pagina - 1,
+      size: tamanho,
+      ...(filtros?.busca ? { busca: filtros.busca } : {}),
+      ...(filtros?.curso ? { curso: filtros.curso } : {}),
+    },
   })
  
   const dados = response.data
@@ -35,7 +49,7 @@ export async function listarEstudantes(pagina = 1, tamanho = 10): Promise<Pagina
  
 export async function cadastrarEstudante(dados: NovoEstudante): Promise<Estudante> {
   try {
-    const response = await http.post<Estudante>('/v1/aluno', dados)
+    const response = await http.post<Estudante>('/alunos', dados)
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 409) {
@@ -43,4 +57,32 @@ export async function cadastrarEstudante(dados: NovoEstudante): Promise<Estudant
     }
     throw error
   }
+}
+
+export interface Curso {
+  id?: string
+  nome: string
+  ativo?: boolean
+}
+
+export type AtualizarEstudantePayload = Pick<NovoEstudante, 'nome' | 'curso' | 'origemIdentificacao'>
+
+export async function buscarEstudantePorMatricula(matricula: string): Promise<Estudante> {
+  const response = await http.get<Estudante>(`/alunos/${encodeURIComponent(matricula)}`)
+  return response.data
+}
+
+export async function atualizarEstudante(matricula: string, payload: AtualizarEstudantePayload): Promise<Estudante> {
+  const response = await http.put<Estudante>(`/alunos/${encodeURIComponent(matricula)}`, payload)
+  return response.data
+}
+
+export async function inativarEstudante(matricula: string): Promise<void> {
+  await http.patch(`/alunos/${encodeURIComponent(matricula)}`, { ativo: false })
+}
+
+export async function listarCursosAtivos(): Promise<Curso[]> {
+  const response = await http.get<Curso[] | { content: Curso[] }>('/cursos')
+  const lista = Array.isArray(response.data) ? response.data : (response.data?.content ?? [])
+  return lista.filter((curso) => curso.ativo !== false)
 }

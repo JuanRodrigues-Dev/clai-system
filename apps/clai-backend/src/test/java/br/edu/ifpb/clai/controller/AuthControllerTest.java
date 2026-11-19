@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.edu.ifpb.clai.config.GlobalExceptionHandler;
 import br.edu.ifpb.clai.config.SecurityConfig;
 import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.TokenResponse;
@@ -26,7 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = AuthController.class)
-@Import({SecurityConfig.class, AuthService.class, JwtService.class})
+@Import({SecurityConfig.class, AuthService.class, JwtService.class, GlobalExceptionHandler.class})
 class AuthControllerTest {
 
     @Autowired
@@ -50,6 +51,7 @@ class AuthControllerTest {
         when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
 
         MvcResult result = mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@ifpb.edu.br\",\"senha\":\"Senha123!\"}"))
                 .andExpect(status().isOk())
@@ -68,6 +70,7 @@ class AuthControllerTest {
         when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
 
         mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"admin@ifpb.edu.br\",\"password\":\"Senha123!\"}"))
                 .andExpect(status().isOk())
@@ -75,25 +78,31 @@ class AuthControllerTest {
     }
 
     @Test
-    void deveRetornar401ComMensagemGenericaQuandoEmailNaoExistir() throws Exception {
+    void deveRetornar401ProblemDetailQuandoEmailNaoExistir() throws Exception {
         when(usuarioRepository.findByEmail("inexistente@ifpb.edu.br")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"inexistente@ifpb.edu.br\",\"senha\":\"Senha123!\"}"))
                 .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value("Credenciais inválidas."))
                 .andExpect(jsonPath("$.erro").value("Credenciais inválidas."));
     }
 
     @Test
-    void deveRetornar401ComMesmaMensagemGenericaQuandoSenhaEstiverIncorreta() throws Exception {
+    void deveRetornar401ProblemDetailQuandoSenhaEstiverIncorreta() throws Exception {
         Usuario usuario = new Usuario("admin@ifpb.edu.br", passwordEncoder.encode("SenhaCorreta!"));
         when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
 
         mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@ifpb.edu.br\",\"senha\":\"SenhaErrada\"}"))
                 .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value("Credenciais inválidas."))
                 .andExpect(jsonPath("$.erro").value("Credenciais inválidas."));
     }
 
@@ -107,10 +116,12 @@ class AuthControllerTest {
         when(usuarioRepository.findByEmail("inativo@ifpb.edu.br")).thenReturn(Optional.of(usuarioInativo));
 
         mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"inativo@ifpb.edu.br\",\"senha\":\"Senha123!\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.erro").value("Credenciais inválidas."));
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value("Credenciais inválidas."));
     }
 
     @Test
@@ -123,12 +134,23 @@ class AuthControllerTest {
     }
 
     @Test
+    void deveRetornar400ProblemDetailParaBodyInvalidoSemMascararComo401() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"\",\"senha\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
     void deveRetornarCorpo401IdenticoSemRevelarSeUsuarioExiste() throws Exception {
         Usuario usuario = new Usuario("admin@ifpb.edu.br", passwordEncoder.encode("SenhaCorreta!"));
         when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
         when(usuarioRepository.findByEmail("inexistente@ifpb.edu.br")).thenReturn(Optional.empty());
 
         String respostaInexistente = mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"inexistente@ifpb.edu.br\",\"senha\":\"SenhaQualquer\"}"))
                 .andExpect(status().isUnauthorized())
@@ -137,6 +159,7 @@ class AuthControllerTest {
                 .getContentAsString();
 
         String respostaSenhaErrada = mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@ifpb.edu.br\",\"senha\":\"SenhaErrada\"}"))
                 .andExpect(status().isUnauthorized())
@@ -144,19 +167,9 @@ class AuthControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        String respostaCamposVazios = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"\",\"senha\":\"\"}"))
-                .andExpect(status().isUnauthorized())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
         assertThat(respostaInexistente)
                 .isEqualTo(respostaSenhaErrada)
-                .isEqualTo(respostaCamposVazios)
                 .doesNotContain("inexistente@ifpb.edu.br")
                 .doesNotContain("admin@ifpb.edu.br");
     }
 }
-
