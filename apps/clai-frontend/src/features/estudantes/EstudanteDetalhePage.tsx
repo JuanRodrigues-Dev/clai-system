@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CalendarClock,
   ClipboardList,
+  FileText,
   GraduationCap,
   Hash,
   LoaderCircle,
@@ -14,8 +15,9 @@ import type { Estudante } from '../../types/estudante'
 import { buscarEstudantePorMatricula } from './estudanteService'
 import { EstudoCasoTab } from '../estudo-caso/EstudoCasoTab'
 import { AcompanhamentoAtendimentosTab } from '../acompanhamento/AcompanhamentoAtendimentosTab'
+import { DocumentosPedagogicosTab } from '../documentos/DocumentosPedagogicosTab'
 
-type AbaProntuario = 'estudo-caso' | 'acompanhamento'
+type AbaProntuario = 'estudo-caso' | 'acompanhamento' | 'documentos'
 
 export default function EstudanteDetalhePage() {
   const { matricula } = useParams<{ matricula: string }>()
@@ -194,6 +196,21 @@ export default function EstudanteDetalhePage() {
             <CalendarClock className="size-4" aria-hidden="true" />
             Acompanhamento e Atendimentos
           </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={abaAtiva === 'documentos'}
+            onClick={() => setAbaAtiva('documentos')}
+            className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition focus:outline-none ${
+              abaAtiva === 'documentos'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900'
+            }`}
+          >
+            <FileText className="size-4" aria-hidden="true" />
+            Documentos Pedagógicos
+          </button>
         </nav>
       </div>
 
@@ -211,6 +228,14 @@ export default function EstudanteDetalhePage() {
           <AcompanhamentoAtendimentosTab
             matricula={estudante.matricula}
             nomeEstudante={estudante.nome}
+          />
+        )}
+
+        {abaAtiva === 'documentos' && (
+          <DocumentosPedagogicosTab
+            matricula={estudante.matricula}
+            nomeEstudante={estudante.nome}
+            cursoEstudante={estudante.curso}
           />
         )}
       </div>
