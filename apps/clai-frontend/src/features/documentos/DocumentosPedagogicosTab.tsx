@@ -5,6 +5,7 @@ import { estudoCasoService } from '../estudo-caso/estudoCasoService';
 import type { AcompanhamentoResponse } from '../../types/acompanhamento';
 import type { EstudoDeCasoResponse } from '../../types/estudoCaso';
 import { PlanoAcaoSection } from './PlanoAcaoSection';
+import { PeiPeaSection } from './PeiPeaSection';
 
 interface DocumentosPedagogicosTabProps {
   matricula: string;
@@ -15,6 +16,7 @@ interface DocumentosPedagogicosTabProps {
 export function DocumentosPedagogicosTab({
   matricula,
   nomeEstudante,
+  cursoEstudante,
 }: DocumentosPedagogicosTabProps) {
   const [acompanhamento, setAcompanhamento] = useState<AcompanhamentoResponse | null>(null);
   const [estudoCaso, setEstudoCaso] = useState<EstudoDeCasoResponse | null>(null);
@@ -112,6 +114,15 @@ export function DocumentosPedagogicosTab({
         matricula={matricula}
         nomeEstudante={nomeEstudante}
         acompanhamento={acompanhamento}
+      />
+
+      {/* US 13 — PEI e PEAs por Disciplina (Fase 03) */}
+      <PeiPeaSection
+        matricula={matricula}
+        nomeEstudante={nomeEstudante}
+        cursoEstudante={cursoEstudante}
+        acompanhamento={acompanhamento}
+        necessitaAdaptacaoCurricular={estudoCaso?.necessitaAdaptacaoCurricular}
       />
     </div>
   );
