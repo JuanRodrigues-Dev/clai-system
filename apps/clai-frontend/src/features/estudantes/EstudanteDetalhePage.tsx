@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft,
   CalendarClock,
@@ -19,12 +19,25 @@ import { DocumentosPedagogicosTab } from '../documentos/DocumentosPedagogicosTab
 
 type AbaProntuario = 'estudo-caso' | 'acompanhamento' | 'documentos'
 
+function normalizarAba(valor: string | null): AbaProntuario {
+  if (valor === 'acompanhamento' || valor === 'documentos') {
+    return valor
+  }
+  return 'estudo-caso'
+}
+
 export default function EstudanteDetalhePage() {
   const { matricula } = useParams<{ matricula: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [estudante, setEstudante] = useState<Estudante | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
-  const [abaAtiva, setAbaAtiva] = useState<AbaProntuario>('estudo-caso')
+
+  const abaAtiva = normalizarAba(searchParams.get('aba'))
+
+  function selecionarAba(novaAba: AbaProntuario) {
+    setSearchParams({ aba: novaAba }, { replace: true })
+  }
 
   const carregarEstudante = useCallback(async () => {
     if (!matricula) return
@@ -171,7 +184,7 @@ export default function EstudanteDetalhePage() {
             type="button"
             role="tab"
             aria-selected={abaAtiva === 'estudo-caso'}
-            onClick={() => setAbaAtiva('estudo-caso')}
+            onClick={() => selecionarAba('estudo-caso')}
             className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition focus:outline-none ${
               abaAtiva === 'estudo-caso'
                 ? 'border-blue-600 text-blue-600'
@@ -186,7 +199,7 @@ export default function EstudanteDetalhePage() {
             type="button"
             role="tab"
             aria-selected={abaAtiva === 'acompanhamento'}
-            onClick={() => setAbaAtiva('acompanhamento')}
+            onClick={() => selecionarAba('acompanhamento')}
             className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition focus:outline-none ${
               abaAtiva === 'acompanhamento'
                 ? 'border-blue-600 text-blue-600'
@@ -201,7 +214,7 @@ export default function EstudanteDetalhePage() {
             type="button"
             role="tab"
             aria-selected={abaAtiva === 'documentos'}
-            onClick={() => setAbaAtiva('documentos')}
+            onClick={() => selecionarAba('documentos')}
             className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition focus:outline-none ${
               abaAtiva === 'documentos'
                 ? 'border-blue-600 text-blue-600'
