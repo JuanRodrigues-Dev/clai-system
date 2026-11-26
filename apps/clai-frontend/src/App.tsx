@@ -7,6 +7,7 @@ import InicioPage from './features/inicio/InicioPage'
 import EstudantesListPage from './features/estudantes/EstudantesListPage'
 import EstudanteFormPage from './features/estudantes/EstudanteFormPage'
 import EstudanteDetalhePage from './features/estudantes/EstudanteDetalhePage'
+import ProntuariosPage from './features/estudantes/ProntuariosPage'
 import InformacoesAcademicasPage from './features/academico/InformacoesAcademicasPage'
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/estudantes/novo" element={<EstudanteFormPage />} />
           <Route path="/estudantes/:matricula" element={<EstudanteDetalhePage />} />
           <Route path="/estudantes/:matricula/editar" element={<EstudanteFormPage />} />
+          <Route path="/prontuarios" element={<ProntuariosPage />} />
           <Route path="/informacoes-academicas" element={<InformacoesAcademicasPage />} />
           <Route path="/perfil" element={<MeuPerfilPage />} />
         </Route>

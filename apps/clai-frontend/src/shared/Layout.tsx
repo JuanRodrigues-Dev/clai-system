@@ -1,18 +1,20 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Home, LogOut, User, Users } from 'lucide-react'
+import { BookOpen, ClipboardList, Home, LogOut, User, Users } from 'lucide-react'
 import { useAuth } from '../features/auth/useAuth'
 import claiLogo from '../assets/clai-logo.svg'
 
 const links = [
   { to: '/inicio', label: 'Início', icon: Home },
   { to: '/estudantes', label: 'Estudantes', icon: Users },
+  { to: '/prontuarios', label: 'Prontuários', icon: ClipboardList },
   { to: '/informacoes-academicas', label: 'Informações Acadêmicas', icon: BookOpen },
 ]
 const titulos: Record<string, string> = {
   '/inicio': 'Início',
   '/estudantes': 'Estudantes',
   '/estudantes/novo': 'Cadastrar estudante',
+  '/prontuarios': 'Central de Prontuários',
   '/informacoes-academicas': 'Informações Acadêmicas',
   '/perfil': 'Meu perfil e permissões',
 }
