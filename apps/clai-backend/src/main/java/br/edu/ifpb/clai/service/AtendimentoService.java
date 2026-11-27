@@ -1,6 +1,6 @@
-
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.config.Auditar;
 import br.edu.ifpb.clai.model.Acompanhamento;
 import br.edu.ifpb.clai.model.Atendimento;
 import br.edu.ifpb.clai.model.Aluno;
@@ -28,6 +28,7 @@ public class AtendimentoService {
         this.acompanhamentoRepository = acompanhamentoRepository;
     }
 
+    @Auditar(recurso = "ATENDIMENTO", acao = "CRIACAO")
     @Transactional
     public AtendimentoResponse criar(AtendimentoRequest request) {
         validarHorario(request.horaInicio(), request.horaFim());
@@ -67,6 +68,7 @@ public class AtendimentoService {
         return toResponse(salvo);
     }
 
+    @Auditar(recurso = "ATENDIMENTO", acao = "LEITURA")
     @Transactional(readOnly = true)
     public List<AtendimentoResponse> buscarPorMatriculaAluno(String matricula) {
         if (!acompanhamentoRepository.findByAlunoMatricula(matricula).isPresent()) {
@@ -81,6 +83,7 @@ public class AtendimentoService {
                 .toList();
     }
 
+    @Auditar(recurso = "ATENDIMENTO", acao = "ATUALIZACAO")
     @Transactional
     public AtendimentoResponse atualizar(Long id, AtendimentoUpdateRequest request) {
         validarHorario(request.horaInicio(), request.horaFim());

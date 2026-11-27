@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.config.Auditar;
 import br.edu.ifpb.clai.model.Aluno;
 import br.edu.ifpb.clai.model.EstudoDeCaso;
 import br.edu.ifpb.clai.model.dto.EstudoDeCasoRequest;
@@ -24,6 +25,7 @@ public class EstudoDeCasoService {
         this.alunoRepository = alunoRepository;
     }
 
+    @Auditar(recurso = "ESTUDO_CASO", acao = "CRIACAO")
     @Transactional
     public EstudoDeCasoResponse criar(EstudoDeCasoRequest request) {
         Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(request.matriculaAluno())
@@ -42,6 +44,7 @@ public class EstudoDeCasoService {
         return EstudoDeCasoResponse.fromEntity(estudoRepository.save(estudo));
     }
 
+    @Auditar(recurso = "ESTUDO_CASO", acao = "LEITURA")
     @Transactional(readOnly = true)
     public EstudoDeCasoResponse buscarPorMatricula(String matricula) {
         EstudoDeCaso estudo = estudoRepository.findByAlunoMatricula(matricula)
@@ -51,6 +54,7 @@ public class EstudoDeCasoService {
         return EstudoDeCasoResponse.fromEntity(estudo);
     }
 
+    @Auditar(recurso = "ESTUDO_CASO", acao = "ATUALIZACAO")
     @Transactional
     public EstudoDeCasoResponse atualizar(
             String matricula,
