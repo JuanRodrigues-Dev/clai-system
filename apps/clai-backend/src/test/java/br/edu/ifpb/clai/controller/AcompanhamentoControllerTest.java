@@ -2,6 +2,7 @@ package br.edu.ifpb.clai.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,7 +48,7 @@ class AcompanhamentoControllerTest {
     private AcompanhamentoService acompanhamentoService;
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "CLAI")
     void deveCriarAcompanhamentoEUsarVersaoPadraoDoHeader() throws Exception {
         when(acompanhamentoService.criar(any(AcompanhamentoRequest.class))).thenReturn(response());
 
@@ -61,7 +62,7 @@ class AcompanhamentoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "CLAI")
     void deveRetornar400ProblemDetailParaPayloadInvalido() throws Exception {
         AcompanhamentoRequest requestInvalido = new AcompanhamentoRequest("", null, null, "", "", "", null);
 
@@ -75,7 +76,7 @@ class AcompanhamentoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "PEDAGOGICO")
     void deveBuscarPorMatriculaComVersaoExplicitaNoHeader() throws Exception {
         when(acompanhamentoService.buscarPorMatriculaAluno("2024001")).thenReturn(response());
 
@@ -85,7 +86,16 @@ class AcompanhamentoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "PROFESSOR")
+    void deveRetornar403QuandoUsuarioNaoPossuirRoleAutorizada() throws Exception {
+        mockMvc.perform(get("/acompanhamentos/aluno/2024001").header("X-API-Version", "1"))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(acompanhamentoService);
+    }
+
+    @Test
+    @WithMockUser(roles = "CLAI")
     void deveRetornar404ProblemDetailQuandoAcompanhamentoNaoExistir() throws Exception {
         when(acompanhamentoService.buscarPorMatriculaAluno("999999"))
                 .thenThrow(new RecursoNaoEncontradoException("Acompanhamento não encontrado para a matrícula informada."));
@@ -97,7 +107,7 @@ class AcompanhamentoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void deveAtualizarAcompanhamentoComVersaoExplicitaNoHeader() throws Exception {
         AcompanhamentoUpdateRequest request = new AcompanhamentoUpdateRequest(
                 StatusAcompanhamento.PAUSADO, LocalDate.of(2026, 2, 1), "Mensal", "Equipe CLAI", "Objetivos", null);

@@ -9,13 +9,19 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.edu.ifpb.clai.model.Role;
 import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.LoginRequest;
+import br.edu.ifpb.clai.model.dto.TokenResponse;
+import br.edu.ifpb.clai.model.dto.UsuarioMeResponse;
 import br.edu.ifpb.clai.repository.UsuarioRepository;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import tools.jackson.databind.ObjectMapper;
@@ -24,13 +30,14 @@ class AuthServiceTest {
 
     private UsuarioRepository usuarioRepository;
     private PasswordEncoder passwordEncoder;
+    private JwtService jwtService;
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
         usuarioRepository = mock(UsuarioRepository.class);
         passwordEncoder = spy(new BCryptPasswordEncoder());
-        JwtService jwtService = new JwtService(
+        jwtService = new JwtService(
                 "chave_secreta_de_teste_com_tamanho_suficiente_256_bits",
                 60,
                 new ObjectMapper());
@@ -76,5 +83,38 @@ class AuthServiceTest {
         assertThat(erroUsuarioInativo)
                 .isInstanceOf(CredenciaisInvalidasException.class)
                 .hasMessage(erroInexistente.getMessage());
+    }
+
+    @Test
+    void deveIncluirRolesAssociadasAoUsuarioNoTokenJwt() {
+        Usuario docente = new Usuario("docente@ifpb.edu.br", passwordEncoder.encode("SenhaCorreta!"));
+        docente.adicionarRole(new Role("ROLE_PROFESSOR", "Docente"));
+        when(usuarioRepository.findByEmail("docente@ifpb.edu.br")).thenReturn(Optional.of(docente));
+
+        TokenResponse token = authService.autenticar(new LoginRequest("docente@ifpb.edu.br", "SenhaCorreta!"));
+
+        assertThat(jwtService.extrairRoles(token.token()))
+                .containsExactly("ROLE_PROFESSOR")
+                .doesNotContain("ROLE_ADMIN");
+    }
+
+    @Test
+    void deveRetornarRolesDoUsuarioSemFallbackEstaticoEmObterUsuarioLogado() {
+        Usuario pedagogo = new Usuario("pedagogico@ifpb.edu.br", "hash");
+        pedagogo.adicionarRole(new Role("ROLE_PEDAGOGICO", "Setor Pedagógico"));
+        when(usuarioRepository.findByEmail("pedagogico@ifpb.edu.br")).thenReturn(Optional.of(pedagogo));
+
+        var auth = new UsernamePasswordAuthenticationToken(
+                "pedagogico@ifpb.edu.br",
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_PEDAGOGICO")));
+
+        UsuarioMeResponse me = authService.obterUsuarioLogado(auth);
+        assertThat(me.roles()).containsExactly("ROLE_PEDAGOGICO");
+
+        when(usuarioRepository.findByEmail("semrole@ifpb.edu.br")).thenReturn(Optional.empty());
+        var authSemRoles = new UsernamePasswordAuthenticationToken("semrole@ifpb.edu.br", null, List.of());
+        UsuarioMeResponse meSemRoles = authService.obterUsuarioLogado(authSemRoles);
+        assertThat(meSemRoles.roles()).isEmpty();
     }
 }

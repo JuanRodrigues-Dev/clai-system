@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import br.edu.ifpb.clai.config.GlobalExceptionHandler;
 import br.edu.ifpb.clai.config.SecurityConfig;
+import br.edu.ifpb.clai.model.Role;
 import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.TokenResponse;
 import br.edu.ifpb.clai.repository.UsuarioRepository;
@@ -48,6 +49,7 @@ class AuthControllerTest {
     @Test
     void deveAutenticarComEmailESenhaERetornarTokenJwtValido() throws Exception {
         Usuario usuario = new Usuario("admin@ifpb.edu.br", passwordEncoder.encode("Senha123!"));
+        usuario.adicionarRole(new Role("ROLE_ADMIN", "Administrador"));
         when(usuarioRepository.findByEmail("admin@ifpb.edu.br")).thenReturn(Optional.of(usuario));
 
         MvcResult result = mockMvc.perform(post("/auth/login")
@@ -62,6 +64,46 @@ class AuthControllerTest {
                 result.getResponse().getContentAsString(), TokenResponse.class);
         assertThat(jwtService.validarEExtrairSubject(response.token()))
                 .contains("admin@ifpb.edu.br");
+        assertThat(jwtService.extrairRoles(response.token()))
+                .containsExactly("ROLE_ADMIN");
+    }
+
+    @Test
+    void deveInjetarRolesReaisNoClaimRolesDoJwtSemFallbackEstatico() throws Exception {
+        Usuario usuario = new Usuario("clai@ifpb.edu.br", passwordEncoder.encode("Senha123!"));
+        usuario.adicionarRole(new Role("ROLE_PEDAGOGICO", "Equipe pedagógica"));
+        usuario.adicionarRole(new Role("ROLE_CLAI", "Equipe CLAI"));
+        when(usuarioRepository.findByEmail("clai@ifpb.edu.br")).thenReturn(Optional.of(usuario));
+
+        MvcResult result = mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"clai@ifpb.edu.br\",\"senha\":\"Senha123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TokenResponse response = objectMapper.readValue(
+                result.getResponse().getContentAsString(), TokenResponse.class);
+        assertThat(jwtService.extrairRoles(response.token()))
+                .containsExactly("ROLE_CLAI", "ROLE_PEDAGOGICO")
+                .doesNotContain("ROLE_ADMIN");
+    }
+
+    @Test
+    void deveRetornarListaVaziaDeRolesQuandoUsuarioNaoPossuirRolesCadastradas() throws Exception {
+        Usuario usuarioSemRole = new Usuario("semrole@ifpb.edu.br", passwordEncoder.encode("Senha123!"));
+        when(usuarioRepository.findByEmail("semrole@ifpb.edu.br")).thenReturn(Optional.of(usuarioSemRole));
+
+        MvcResult result = mockMvc.perform(post("/auth/login")
+                        .header("X-API-Version", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"semrole@ifpb.edu.br\",\"senha\":\"Senha123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TokenResponse response = objectMapper.readValue(
+                result.getResponse().getContentAsString(), TokenResponse.class);
+        assertThat(jwtService.extrairRoles(response.token())).isEmpty();
     }
 
     @Test
