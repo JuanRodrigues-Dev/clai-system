@@ -13,6 +13,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { peiService } from './peiService';
+import { RaiDisciplinaPanel } from './RaiDisciplinaPanel';
 import { listarDisciplinas } from '../academico/academicoService';
 import type {
   PeaRequest,
@@ -934,6 +935,12 @@ export function PeiPeaSection({
                         </p>
                       </div>
                     )}
+
+                    <RaiDisciplinaPanel
+                      peaId={item.id}
+                      nomeDisciplina={obterNomeDisciplina(item)}
+                      nomeProfessor={item.nomeProfessor}
+                    />
                   </article>
                 ))}
               </div>

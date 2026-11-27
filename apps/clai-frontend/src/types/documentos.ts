@@ -89,3 +89,26 @@ export interface PeiResponse {
   criadoEm?: string;
   atualizadoEm?: string;
 }
+
+export interface RaiRequest {
+  peaDisciplinaId: number;
+  frequenciaAvaliada?: string | null;
+  eficaciaAdaptacoes: string;
+  parecerDocente: string;
+  ajustesRecomendados?: string | null;
+  dataAvaliacao: string;
+}
+
+export interface RaiResponse {
+  id: number;
+  peaDisciplinaId: number;
+  disciplinaNome?: string;
+  nomeProfessor?: string;
+  frequenciaAvaliada?: string | null;
+  eficaciaAdaptacoes: string;
+  parecerDocente: string;
+  ajustesRecomendados?: string | null;
+  dataAvaliacao: string;
+  criadoEm?: string;
+  atualizadoEm?: string;
+}

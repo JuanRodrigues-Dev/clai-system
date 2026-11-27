@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.config.Auditar;
 import br.edu.ifpb.clai.model.Acompanhamento;
 import br.edu.ifpb.clai.model.Aluno;
 import br.edu.ifpb.clai.model.StatusAcompanhamento;
@@ -25,6 +26,7 @@ public class AcompanhamentoService {
         this.alunoRepository = alunoRepository;
     }
 
+    @Auditar(recurso = "ACOMPANHAMENTO", acao = "CRIACAO")
     @Transactional
     public AcompanhamentoResponse criar(AcompanhamentoRequest request) {
         Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(request.matriculaAluno())
@@ -47,6 +49,7 @@ public class AcompanhamentoService {
         return toResponse(salvo);
     }
 
+    @Auditar(recurso = "ACOMPANHAMENTO", acao = "LEITURA")
     @Transactional(readOnly = true)
     public AcompanhamentoResponse buscarPorMatriculaAluno(String matricula) {
         Acompanhamento acompanhamento = acompanhamentoRepository.findByAlunoMatricula(matricula)
@@ -55,6 +58,7 @@ public class AcompanhamentoService {
         return toResponse(acompanhamento);
     }
 
+    @Auditar(recurso = "ACOMPANHAMENTO", acao = "ATUALIZACAO")
     @Transactional
     public AcompanhamentoResponse atualizar(Long id, AcompanhamentoUpdateRequest request) {
         Acompanhamento acompanhamento = acompanhamentoRepository.findById(id)
