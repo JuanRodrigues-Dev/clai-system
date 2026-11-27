@@ -1,4 +1,3 @@
-
 package br.edu.ifpb.clai.controller;
 
 import br.edu.ifpb.clai.model.dto.AtendimentoRequest;
@@ -9,6 +8,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping(value = "/atendimentos", version = "1")
+@PreAuthorize("hasAnyRole('CLAI', 'ADMIN', 'PEDAGOGICO')")
 public class AtendimentoController {
 
     private final AtendimentoService atendimentoService;

@@ -53,9 +53,11 @@ public class JwtService {
         if (usuario.getId() != null) {
             payload.put("uid", usuario.getId());
         }
-        List<String> roles = (usuario.getRoles() == null || usuario.getRoles().isEmpty())
-                ? List.of("ROLE_ADMIN")
-                : List.copyOf(usuario.getRoles());
+        List<String> roles = (usuario.getRoles() == null)
+                ? List.of()
+                : usuario.getRoles().stream()
+                        .filter(r -> r != null && !r.isBlank())
+                        .toList();
         payload.put("roles", roles);
         payload.put("iat", agora.getEpochSecond());
         payload.put("exp", expiracao.getEpochSecond());
@@ -77,16 +79,13 @@ public class JwtService {
                 .map(claims -> {
                     Object rolesObj = claims.get("roles");
                     if (rolesObj instanceof List<?> lista) {
-                        List<String> roles = lista.stream()
+                        return lista.stream()
                                 .filter(String.class::isInstance)
                                 .map(String.class::cast)
                                 .filter(r -> !r.isBlank())
                                 .toList();
-                        if (!roles.isEmpty()) {
-                            return roles;
-                        }
                     }
-                    return List.of("ROLE_ADMIN");
+                    return List.<String>of();
                 })
                 .orElse(List.of());
     }

@@ -3,14 +3,21 @@ package br.edu.ifpb.clai.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuario")
@@ -33,8 +40,13 @@ public class Usuario {
     @Column(nullable = false)
     private boolean ativo = true;
 
-    @Transient
-    private List<String> roles = List.of("ROLE_ADMIN");
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new LinkedHashSet<>();
 
     protected Usuario() {
         // construtor exigido pelo JPA
@@ -74,10 +86,30 @@ public class Usuario {
     }
 
     public List<String> getRoles() {
-        return roles;
+        return roles.stream()
+                .map(Role::getNome)
+                .filter(nome -> nome != null && !nome.isBlank())
+                .sorted()
+                .toList();
     }
 
-    public void setRoles(List<String> roles) {
-        this.roles = (roles == null || roles.isEmpty()) ? List.of("ROLE_ADMIN") : List.copyOf(roles);
+    @JsonIgnore
+    public Set<Role> getRoleEntities() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    public void adicionarRole(Role role) {
+        if (role != null) {
+            this.roles.add(role);
+        }
+    }
+
+    public void definirRoles(Collection<Role> novasRoles) {
+        this.roles.clear();
+        if (novasRoles != null) {
+            novasRoles.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .forEach(this.roles::add);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.model.Role;
 import br.edu.ifpb.clai.model.Usuario;
 import br.edu.ifpb.clai.model.dto.LoginRequest;
 import br.edu.ifpb.clai.model.dto.TokenResponse;
@@ -11,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -32,6 +34,7 @@ public class AuthService {
         this.hashFicticio = passwordEncoder.encode(SENHA_FICTICIA);
     }
 
+    @Transactional(readOnly = true)
     public TokenResponse autenticar(LoginRequest request) {
         if (request == null
                 || request.email() == null
@@ -55,10 +58,12 @@ public class AuthService {
         }
 
         Usuario usuario = usuarioOpt.get();
-        if (usuario.getId() != null) {
-            List<String> roles = usuarioRepository.findRoleNamesByUsuarioId(usuario.getId());
-            if (roles != null && !roles.isEmpty()) {
-                usuario.setRoles(roles);
+        if (usuario.getRoles().isEmpty() && usuario.getId() != null) {
+            List<String> rolesBanco = usuarioRepository.findRoleNamesByUsuarioId(usuario.getId());
+            if (rolesBanco != null && !rolesBanco.isEmpty()) {
+                usuario.definirRoles(rolesBanco.stream()
+                        .map(nome -> new Role(nome, null))
+                        .toList());
             }
         }
 
@@ -66,6 +71,7 @@ public class AuthService {
         return new TokenResponse(token);
     }
 
+    @Transactional(readOnly = true)
     public UsuarioMeResponse obterUsuarioLogado(Authentication authentication) {
         if (authentication == null
                 || !authentication.isAuthenticated()
@@ -82,12 +88,12 @@ public class AuthService {
 
         return usuarioRepository.findByEmail(email.trim())
                 .map(usuario -> {
-                    List<String> roles = rolesContexto;
-                    if (roles.isEmpty() && usuario.getId() != null) {
+                    List<String> roles = usuario.getRoles();
+                    if ((roles == null || roles.isEmpty()) && usuario.getId() != null) {
                         roles = usuarioRepository.findRoleNamesByUsuarioId(usuario.getId());
                     }
                     if (roles == null || roles.isEmpty()) {
-                        roles = usuario.getRoles();
+                        roles = rolesContexto;
                     }
                     return new UsuarioMeResponse(
                             usuario.getId(),
@@ -101,6 +107,6 @@ public class AuthService {
                         email.trim(),
                         true,
                         null,
-                        rolesContexto.isEmpty() ? List.of("ROLE_ADMIN") : rolesContexto));
+                        rolesContexto));
     }
 }

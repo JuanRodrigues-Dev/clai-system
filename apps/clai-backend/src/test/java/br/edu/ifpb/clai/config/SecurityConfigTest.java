@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -56,6 +57,24 @@ class SecurityConfigTest {
 
         @GetMapping("/alunos")
         ResponseEntity<Void> protectedEndpoint() {
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/auditoria")
+        @PreAuthorize("hasRole('ADMIN')")
+        ResponseEntity<Void> auditoriaEndpoint() {
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/rais")
+        @PreAuthorize("hasAnyRole('PROFESSOR', 'CLAI', 'ADMIN')")
+        ResponseEntity<Void> raiEndpoint() {
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/prontuario-teste")
+        @PreAuthorize("hasAnyRole('CLAI', 'ADMIN', 'PEDAGOGICO')")
+        ResponseEntity<Void> prontuarioEndpoint() {
             return ResponseEntity.ok().build();
         }
 
@@ -124,6 +143,44 @@ class SecurityConfigTest {
                 .andReturn();
 
         assertThat(result.getRequest().getSession(false)).isNull();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void devePermitirAuditoriaParaAdmin() throws Exception {
+        mockMvc.perform(get("/auditoria"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "CLAI")
+    void deveNegarAuditoriaParaNaoAdmin() throws Exception {
+        mockMvc.perform(get("/auditoria"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "PROFESSOR")
+    void devePermitirRaiParaProfessorENegarProntuarioParaProfessor() throws Exception {
+        mockMvc.perform(get("/rais"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/prontuario-teste"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ASSISTENTE")
+    void deveNegarRaiParaAssistente() throws Exception {
+        mockMvc.perform(get("/rais"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "PEDAGOGICO")
+    void devePermitirProntuarioParaPedagogico() throws Exception {
+        mockMvc.perform(get("/prontuario-teste"))
+                .andExpect(status().isOk());
     }
 
     @Test
