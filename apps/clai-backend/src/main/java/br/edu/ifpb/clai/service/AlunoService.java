@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.config.Auditar;
 import br.edu.ifpb.clai.model.Aluno;
 import br.edu.ifpb.clai.model.dto.AlunoRequest;
 import br.edu.ifpb.clai.model.dto.AlunoResponse;
@@ -22,6 +23,7 @@ public class AlunoService {
         this.alunoRepository = alunoRepository;
     }
 
+    @Auditar(recurso = "ESTUDANTE", acao = "CRIACAO")
     @Transactional
     public AlunoResponse criar(AlunoRequest request) {
         if (alunoRepository.existsByMatricula(request.matricula())) {
@@ -43,6 +45,7 @@ public class AlunoService {
         return alunoRepository.findByAtivoTrue(pageable).map(AlunoResponse::fromEntity);
     }
 
+    @Auditar(recurso = "ESTUDANTE", acao = "LEITURA")
     @Transactional(readOnly = true)
     public AlunoResponse buscarPorMatricula(String matricula) {
         Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(matricula)
@@ -50,6 +53,7 @@ public class AlunoService {
         return AlunoResponse.fromEntity(aluno);
     }
 
+    @Auditar(recurso = "ESTUDANTE", acao = "ATUALIZACAO")
     @Transactional
     public AlunoResponse atualizar(String matricula, AlunoUpdateRequest request) {
         Aluno aluno = alunoRepository.findByMatriculaAndAtivoTrue(matricula)
@@ -63,6 +67,7 @@ public class AlunoService {
         return AlunoResponse.fromEntity(salvo);
     }
 
+    @Auditar(recurso = "ESTUDANTE", acao = "ATUALIZACAO")
     @Transactional
     public void atualizarStatus(String matricula, AlunoUpdateStatusRequest request) {
         Aluno aluno = alunoRepository.findByMatricula(matricula)

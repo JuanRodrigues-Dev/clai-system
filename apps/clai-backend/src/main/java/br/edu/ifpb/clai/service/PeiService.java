@@ -1,5 +1,6 @@
 package br.edu.ifpb.clai.service;
 
+import br.edu.ifpb.clai.config.Auditar;
 import br.edu.ifpb.clai.model.Acompanhamento;
 import br.edu.ifpb.clai.model.Aluno;
 import br.edu.ifpb.clai.model.Pei;
@@ -32,6 +33,7 @@ public class PeiService {
         this.alunoRepository = alunoRepository;
     }
 
+    @Auditar(recurso = "PEI", acao = "CRIACAO")
     @Transactional
     public PeiResponse criar(PeiRequest request) {
         Aluno aluno = alunoRepository.findByMatricula(request.matriculaAluno())
@@ -67,6 +69,7 @@ public class PeiService {
         return toResponse(salvo);
     }
 
+    @Auditar(recurso = "PEI", acao = "LEITURA")
     @Transactional(readOnly = true)
     public PeiResponse buscarPorMatriculaAluno(String matricula) {
         Pei pei = peiRepository.findByAcompanhamentoAlunoMatricula(matricula)
@@ -76,6 +79,7 @@ public class PeiService {
         return toResponse(pei);
     }
 
+    @Auditar(recurso = "PEI", acao = "ATUALIZACAO")
     @Transactional
     public PeiResponse atualizarStatus(Long id, PeiUpdateStatusRequest request) {
         Pei pei = peiRepository.findById(id)
